@@ -1,53 +1,33 @@
-export const filterNavigation = (
-  navigation,
-  enabledModules
-) => {
+export const filterNavigation = (navigation, enabledModules = []) => {
   return navigation
+    .filter((item) => {
+      // Core navigation is always available.
+      if (item.type === "core") return true;
+
+      // Remove modules that the company has not purchased.
+      if (item.module && !enabledModules.includes(item.module)) {
+        return false;
+      }
+
+      return true;
+    })
     .map((item) => {
-      // Core items are always available.
-      if (item.type === "core" || item.type === "module") {
-        if (
-          item.module &&
-          !enabledModules.includes(item.module)
-        ) {
-          return null;
-        }
+      // Filter child menus.
+      if (!item.children) return item;
 
-        return item;
-      }
+      const children = item.children.filter((child) => {
+        if (!child.module) return true;
 
-      // Filter nested menus.
-      if (item.children) {
-        const children = item.children
-          .map((child) => {
-            if (
-              child.module &&
-              !enabledModules.includes(child.module)
-            ) {
-              return null;
-            }
+        return enabledModules.includes(child.module);
+      });
 
-            if (child.children) {
-              const nestedChildren = child.children.filter(
-                (nested) => !nested.module ||
-                  enabledModules.includes(nested.module)
-              );
+      // Remove parent if no child menus remain.
+      if (children.length === 0) return null;
 
-              return nestedChildren.length
-                ? { ...child, children: nestedChildren }
-                : null;
-            }
-
-            return child;
-          })
-          .filter(Boolean);
-
-        return children.length
-          ? { ...item, children }
-          : null;
-      }
-
-      return item;
+      return {
+        ...item,
+        children,
+      };
     })
     .filter(Boolean);
 };

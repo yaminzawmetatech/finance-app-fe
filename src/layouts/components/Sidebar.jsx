@@ -285,9 +285,7 @@
 // }
 
 // export { DRAWER_WIDTH };
-
-import { useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Drawer,
@@ -312,6 +310,16 @@ import {
   Calculator,
   ChevronDown,
   ChevronRight,
+  LayoutDashboard,
+  UserRound,
+  Tags,
+  BriefcaseBusiness,
+  FileText,
+  ClipboardCheck,
+  Package,
+  ClipboardList,
+  BookOpen,
+  NotebookPen,
 } from "lucide-react";
 
 import { NavLink, useLocation } from "react-router-dom";
@@ -321,29 +329,25 @@ import { NAVIGATION_CONFIG } from "../../config/navigationConfig";
 
 const DRAWER_WIDTH = 260;
 
-// Soft Grey + Light Orange Theme
-const THEME = {
-  // Backgrounds
-  bgSidebar: "#FCFCFD",
-  bgHover: "#F4F5F6",
-  bgActive: "#FFF1E8",
-  bgActiveHover: "#FFE7D8",
+export const THEME = {
+  bgSidebar: "#FFFBF7",
+  bgContent: "#F7F5F2",
+  bgCard: "#FFFFFF",
 
-  // Borders
-  border: "#EAECF0",
+  primary: "#F07E2C",
+  accentText: "#E86F1C",
 
-  // Orange
-  primary: "#F59350",
-  primaryDark: "#E8874A",
-  accentText: "#D9793B",
+  bgActive: "#FFF0E5",
+  bgActiveHover: "#FFE7D5",
+  bgHover: "#F7F2ED",
 
-  // Typography
-  textPrimary: "#343A40",
-  textMuted: "#858B93",
-  textLight: "#A0A5AB",
+  textPrimary: "#343434",
+  textMuted: "#77716C",
+  textLight: "#A39A92",
 
-  // Shadows
-  activeShadow: "0 2px 6px rgba(245, 147, 80, 0.10)",
+  border: "#EEE7E0",
+
+  activeShadow: "inset 3px 0 0 #F07E2C",
 };
 
 const ICONS = {
@@ -356,39 +360,82 @@ const ICONS = {
   Wallet,
   HandCoins,
   Calculator,
+  LayoutDashboard,
+  UserRound,
+  Tags,
+  BriefcaseBusiness,
+  FileText,
+  ClipboardCheck,
+  Package,
+  ClipboardList,
+  BookOpen,
+  NotebookPen,
 };
 
 export default function Sidebar() {
   const location = useLocation();
 
-  const { activeModules = [], subscriptionLoaded } = useSelector(
-    (state) => state.company || {}
-  );
+  const {
+    activeModules = [],
+    subscriptionLoaded,
+  } = useSelector((state) => state.company || {});
+
+  const isActive = (path) => {
+    if (!path) return false;
+
+    return (
+      location.pathname === path ||
+      (path !== "/" && location.pathname.startsWith(`${path}/`))
+    );
+  };
+
+  // Filter purchased modules
+  const navigation = useMemo(() => {
+    if (!subscriptionLoaded) return [];
+
+    return NAVIGATION_CONFIG
+      .filter((item) => {
+        if (item.type === "core") return true;
+
+        return !item.module || activeModules.includes(item.module);
+      })
+      .map((item) => {
+        if (!item.children) return item;
+
+        const children = item.children.filter(
+          (child) =>
+            !child.module || activeModules.includes(child.module)
+        );
+
+        return {
+          ...item,
+          children,
+        };
+      })
+      .filter(
+        (item) => !item.children || item.children.length > 0
+      );
+  }, [activeModules, subscriptionLoaded]);
 
   const [openMenus, setOpenMenus] = useState({
     administration: true,
   });
 
-  // Filter navigation based on purchased/build modules
-  const navigation = !subscriptionLoaded
-    ? []
-    : NAVIGATION_CONFIG
-        .filter((item) => activeModules.includes(item.module))
-        .map((item) => {
-          if (item.type === "group") {
-            return {
-              ...item,
-              children: item.children.filter((child) =>
-                activeModules.includes(child.module)
-              ),
-            };
-          }
+  // Automatically expand the active module
+  useEffect(() => {
+    const activeGroup = navigation.find(
+      (item) =>
+        item.type === "group" &&
+        item.children?.some((child) => isActive(child.path))
+    );
 
-          return item;
-        })
-        .filter(
-          (item) => item.type !== "group" || item.children.length > 0
-        );
+    if (activeGroup) {
+      setOpenMenus((prev) => ({
+        ...prev,
+        [activeGroup.id]: true,
+      }));
+    }
+  }, [location.pathname, navigation]);
 
   const toggleMenu = (id) => {
     setOpenMenus((prev) => ({
@@ -397,19 +444,20 @@ export default function Sidebar() {
     }));
   };
 
-  const isActive = (path) => location.pathname === path;
-
-  const renderIcon = (iconName) => {
+  const renderIcon = (iconName, size = 19) => {
     const Icon = ICONS[iconName];
 
-    return Icon ? <Icon size={19} strokeWidth={1.8} /> : null;
+    return Icon ? (
+      <Icon size={size} strokeWidth={1.8} />
+    ) : null;
   };
 
-  // Common navigation styling
+  // Common navigation style
   const navigationItemStyle = (active = false) => ({
-    borderRadius: 1.5,
-    mb: 0.5,
+    borderRadius: "9px",
+    mb: 0.6,
     minHeight: 42,
+    px: 1.5,
 
     color: active ? THEME.accentText : THEME.textMuted,
 
@@ -417,11 +465,15 @@ export default function Sidebar() {
 
     boxShadow: active ? THEME.activeShadow : "none",
 
-    transition: "all 0.2s ease",
+    transition: "background-color 0.2s ease, color 0.2s ease",
 
     "&:hover": {
-      bgcolor: active ? THEME.bgActiveHover : THEME.bgHover,
-      color: active ? THEME.accentText : THEME.textPrimary,
+      bgcolor: active
+        ? THEME.bgActiveHover
+        : THEME.bgHover,
+      color: active
+        ? THEME.accentText
+        : THEME.textPrimary,
     },
 
     "& .MuiListItemIcon-root": {
@@ -429,7 +481,9 @@ export default function Sidebar() {
     },
 
     "& .MuiListItemText-primary": {
-      fontWeight: active ? 600 : 400,
+      fontSize: "13.5px",
+      fontWeight: active ? 650 : 500,
+      letterSpacing: "0.05px",
     },
   });
 
@@ -448,34 +502,34 @@ export default function Sidebar() {
           borderRight: `1px solid ${THEME.border}`,
           height: "100vh",
           overflowX: "hidden",
+          overflowY: "auto",
         },
       }}
     >
-      {/* Brand Header */}
-      <Box sx={{ px: 3, py: 2.5 }}>
+      {/* Brand */}
+      <Box sx={{ px: 2.8, py: 2.7 }}>
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 1.5,
-            mb: 0.5,
+            gap: 1.4,
           }}
         >
           <Box
             sx={{
-              width: 7,
-              height: 25,
-              borderRadius: 2,
+              width: 5,
+              height: 29,
+              borderRadius: 5,
               bgcolor: THEME.primary,
+              boxShadow: "0 2px 6px rgba(240,126,44,0.25)",
             }}
           />
 
           <Typography
-            variant="h6"
             sx={{
+              fontSize: 17,
               fontWeight: 800,
-              fontSize: 18,
-              letterSpacing: "0.04em",
+              letterSpacing: "0.5px",
               color: THEME.textPrimary,
             }}
           >
@@ -484,178 +538,184 @@ export default function Sidebar() {
         </Box>
 
         <Typography
-          variant="caption"
           sx={{
-            color: THEME.textMuted,
-            pl: 2.5,
-            display: "block",
+            mt: 0.5,
+            pl: 2,
             fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: "0.25px",
+            color: THEME.textLight,
           }}
         >
-          Management System
+          MANAGEMENT SYSTEM
         </Typography>
       </Box>
 
       <Divider sx={{ borderColor: THEME.border }} />
 
       {/* Navigation */}
-      <List sx={{ px: 1.5, py: 2 }}>
-        {navigation.map((item) => {
-          const isGroup = item.type === "group";
+      <Box sx={{ px: 1.5, py: 2.2 }}>
+        <Typography
+          sx={{
+            px: 1.5,
+            mb: 1.3,
+            fontSize: 10,
+            fontWeight: 700,
+            color: THEME.textLight,
+            letterSpacing: "1.1px",
+          }}
+        >
+          MAIN MENU
+        </Typography>
 
-          if (isGroup) {
-            const expanded = openMenus[item.id];
+        <List disablePadding>
+          {navigation.map((item) => {
+            const isGroup = item.type === "group";
 
-            const groupActive = item.children.some((child) =>
-              isActive(child.path)
-            );
+            if (isGroup) {
+              const expanded = !!openMenus[item.id];
 
-            return (
-              <Box key={item.id} sx={{ mb: 0.8 }}>
-                {/* Parent Menu */}
-                <ListItemButton
-                  onClick={() => toggleMenu(item.id)}
-                  sx={{
-                    ...navigationItemStyle(groupActive),
-                    bgcolor: groupActive
-                      ? "#FFF7F1"
-                      : "transparent",
-                  }}
-                >
-                  <ListItemIcon
+              const groupActive = item.children?.some(
+                (child) => isActive(child.path)
+              );
+
+              return (
+                <Box key={item.id} sx={{ mb: 0.8 }}>
+                  {/* Parent Menu */}
+                  <ListItemButton
+                    onClick={() => toggleMenu(item.id)}
                     sx={{
-                      minWidth: 36,
+                      ...navigationItemStyle(groupActive),
+                      bgcolor: groupActive
+                        ? THEME.bgActive
+                        : "transparent",
                     }}
                   >
-                    {renderIcon(item.icon)}
-                  </ListItemIcon>
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 36,
+                      }}
+                    >
+                      {renderIcon(item.icon, 19)}
+                    </ListItemIcon>
 
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontSize: 14,
-                      fontWeight: groupActive ? 600 : 500,
-                    }}
-                  />
-
-                  {expanded ? (
-                    <ChevronDown
-                      size={17}
-                      color={THEME.textMuted}
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{
+                        fontSize: 13.5,
+                        fontWeight: groupActive ? 650 : 550,
+                      }}
                     />
-                  ) : (
-                    <ChevronRight
-                      size={17}
-                      color={THEME.textMuted}
-                    />
-                  )}
-                </ListItemButton>
 
-                {/* Submenus */}
-                <Collapse
-                  in={expanded}
-                  timeout="auto"
-                  unmountOnExit
-                >
-                  <List
-                    disablePadding
-                    sx={{
-                      ml: 2,
-                      pl: 1,
-                      borderLeft: `1px solid ${THEME.border}`,
-                    }}
+                    {expanded ? (
+                      <ChevronDown
+                        size={16}
+                        color={THEME.textMuted}
+                      />
+                    ) : (
+                      <ChevronRight
+                        size={16}
+                        color={THEME.textMuted}
+                      />
+                    )}
+                  </ListItemButton>
+
+                  {/* Submenus */}
+                  <Collapse
+                    in={expanded}
+                    timeout={200}
+                    unmountOnExit
                   >
-                    {item.children.map((child) => {
-                      const active = isActive(child.path);
+                    <List
+                      disablePadding
+                      sx={{
+                        ml: 2.3,
+                        mt: 0.5,
+                        pl: 1.2,
+                        borderLeft: `1px solid ${THEME.border}`,
+                      }}
+                    >
+                      {item.children.map((child) => {
+                        const active = isActive(child.path);
 
-                      return (
-                        <ListItemButton
-                          key={child.id}
-                          component={NavLink}
-                          to={child.path}
-                          sx={{
-                            ...navigationItemStyle(active),
-                            pl: 2,
-                            py: 1,
-                            minHeight: 38,
-                            borderRadius: 1.5,
-                          }}
-                        >
-                          <ListItemIcon
+                        return (
+                          <ListItemButton
+                            key={child.id}
+                            component={NavLink}
+                            to={child.path}
                             sx={{
-                              minWidth: 30,
+                              ...navigationItemStyle(active),
+                              pl: 1.5,
+                              pr: 1,
+                              minHeight: 36,
+                              borderRadius: "7px",
+                              mb: 0.3,
+
+                              "& .MuiListItemText-primary": {
+                                fontSize: 12.5,
+                                fontWeight: active ? 650 : 450,
+                              },
                             }}
                           >
-                            {renderIcon(child.icon)}
-                          </ListItemIcon>
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 29,
+                              }}
+                            >
+                              {renderIcon(child.icon, 16)}
+                            </ListItemIcon>
 
-                          <ListItemText
-                            primary={child.label}
-                            primaryTypographyProps={{
-                              fontSize: 13,
-                              fontWeight: active ? 600 : 400,
-                            }}
-                          />
-                        </ListItemButton>
-                      );
-                    })}
-                  </List>
-                </Collapse>
-              </Box>
-            );
-          }
+                            <ListItemText
+                              primary={child.label}
+                            />
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </Collapse>
+                </Box>
+              );
+            }
 
-          // Standalone Menu
-          const active = isActive(item.path);
+            // Standalone menu
+            const active = isActive(item.path);
 
-          return (
-            <ListItemButton
-              key={item.id}
-              component={NavLink}
-              to={item.path}
-              sx={{
-                ...navigationItemStyle(active),
-                minHeight: 42,
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 36,
-                }}
+            return (
+              <ListItemButton
+                key={item.id}
+                component={NavLink}
+                to={item.path}
+                sx={navigationItemStyle(active)}
               >
-                {renderIcon(item.icon)}
-              </ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  {renderIcon(item.icon, 19)}
+                </ListItemIcon>
 
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontSize: 14,
-                  fontWeight: active ? 600 : 500,
-                }}
-              />
-            </ListItemButton>
-          );
-        })}
-      </List>
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            );
+          })}
+        </List>
+      </Box>
 
       {/* Footer */}
       <Box
         sx={{
           mt: "auto",
-          px: 3,
-          py: 2.5,
+          px: 2.8,
+          py: 2,
           borderTop: `1px solid ${THEME.border}`,
         }}
       >
         <Typography
-          variant="caption"
           sx={{
-            color: THEME.textLight,
+            fontSize: 10.5,
             fontWeight: 500,
-            fontSize: 11,
+            color: THEME.textLight,
+            letterSpacing: "0.2px",
           }}
         >
-          v1.0.0 • Microfinance System
+          VERSION 1.0.0
         </Typography>
       </Box>
     </Drawer>

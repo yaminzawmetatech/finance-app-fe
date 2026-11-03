@@ -11,11 +11,13 @@ export default function MainLayout() {
         display: "flex",
         width: "100%",
         minHeight: "100vh",
-        bgcolor: "#F8FAFC",
+        bgcolor: "#F7F5F2",
       }}
     >
+      {/* Sidebar */}
       <Sidebar />
 
+      {/* Main Application */}
       <Box
         sx={{
           flex: 1,
@@ -23,17 +25,26 @@ export default function MainLayout() {
           display: "flex",
           flexDirection: "column",
           minHeight: "100vh",
+          bgcolor: "#F7F5F2",
         }}
       >
+        {/* Header */}
         <Header />
 
+        {/* Page Content */}
         <Box
           component="main"
           sx={{
             flex: 1,
-            p: { xs: 2, md: 3 },
+            p: {
+              xs: 2,
+              sm: 2.5,
+              md: 3,
+              lg: 3.5,
+            },
             width: "100%",
             minWidth: 0,
+            bgcolor: "#F7F5F2",
           }}
         >
           <Outlet />
