@@ -13,8 +13,7 @@ import ModuleRoute from "../components/common/ModuleRoute";
 import AdministrationDashboard from
   "../features/administration/pages/AdministrationDashboard";
 
-import CreditDashboard from
-  "../features/credit-management/pages/CreditDashboard";
+import { CreditManagementRoutes } from "../features/credit-management";
 
 import LoanDashboard from
   "../features/loan-management/pages/LoanDashboard";
@@ -24,6 +23,7 @@ import CollectionDashboard from
 
 import FinanceDashboard from
   "../features/finance/pages/FinanceDashboard";
+import UsersList from "../features/core/users/pages/UsersList";
 
 function RequireAuth() {
   const isAuthenticated = useSelector(
@@ -72,6 +72,10 @@ export const router = createBrowserRouter([
                 path: "administration",
                 element: <AdministrationDashboard />,
               },
+              {
+                path: "/administration/users",
+                element: <UsersList />,
+              },
             ],
           },
 
@@ -81,8 +85,8 @@ export const router = createBrowserRouter([
             ),
             children: [
               {
-                path: "credit-management",
-                element: <CreditDashboard />,
+                path: "credit-management/*",
+                element: <CreditManagementRoutes  />,
               },
             ],
           },

@@ -15,12 +15,19 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "@reduxjs/toolkit": "^2.13.0",
+    "axios": "^1.21.0",
+    "js-cookie": "^3.0.8",
+    "lucide-react": "^1.66.0",
+    "material-react-table": "^3.2.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-hook-form": "^7.91.0",
     "react-redux": "^9.3.1",
-    "react-router-dom": "^7.18.5"
+    "react-router-dom": "^7.18.5",
+    "react-toastify": "^11.2.0"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",

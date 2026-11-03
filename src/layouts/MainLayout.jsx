@@ -1,4 +1,3 @@
-
 import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
 
@@ -13,31 +12,17 @@ export default function MainLayout() {
         width: "100%",
         minHeight: "100vh",
         bgcolor: "#F8FAFC",
-        overflow: "hidden",
       }}
     >
-      {/* Sidebar */}
-      <Box
-        sx={{
-          width: 260,
-          minWidth: 260,
-          height: "100vh",
-          position: "sticky",
-          top: 0,
-          overflowY: "auto",
-        }}
-      >
-        <Sidebar />
-      </Box>
+      <Sidebar />
 
-      {/* Main Content */}
       <Box
         sx={{
           flex: 1,
           minWidth: 0,
-          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
+          minHeight: "100vh",
         }}
       >
         <Header />
@@ -46,10 +31,9 @@ export default function MainLayout() {
           component="main"
           sx={{
             flex: 1,
-            width: "100%",
             p: { xs: 2, md: 3 },
-            overflowY: "auto",
-            overflowX: "auto",
+            width: "100%",
+            minWidth: 0,
           }}
         >
           <Outlet />
