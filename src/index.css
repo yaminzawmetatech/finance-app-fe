@@ -1,4 +1,6 @@
 
+@import "./styles/app-design.css";
+
 * {
   margin: 0;
   padding: 0;
@@ -23,6 +25,19 @@ body {
   min-height: 100vh;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  background: #f3f6fc;
+  scrollbar-width: none;
+}
+
+html {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
 }
 
 #root {

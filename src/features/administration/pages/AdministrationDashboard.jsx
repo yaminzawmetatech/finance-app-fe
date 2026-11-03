@@ -1,12 +1,31 @@
-import React from "react";
+import { Building2, ShieldCheck, Users } from "lucide-react";
+import ModuleDashboard from "../../dashboard/components/ModuleDashboard";
 
-const AdministrationDashboard = () => {
+export default function AdministrationDashboard() {
   return (
-    <div>
-      <h1>Administration Dashboard</h1>
-      <p>Welcome to Administration.</p>
-    </div>
+    <ModuleDashboard
+      eyebrow="ADMINISTRATION"
+      title="Welcome to your workspace"
+      description="Keep your team, access, and company operations organized from one place."
+      accent="orange"
+      shortcuts={[
+        {
+          title: "User management",
+          description: "Manage the people who use your workspace.",
+          href: "/administration/users",
+          icon: Users,
+        },
+        {
+          title: "Branch operations",
+          description: "Keep your organization connected across branches.",
+          icon: Building2,
+        },
+        {
+          title: "Roles & access",
+          description: "Maintain the right access for every role.",
+          icon: ShieldCheck,
+        },
+      ]}
+    />
   );
-};
-
-export default AdministrationDashboard;
+}

@@ -1,12 +1,30 @@
-import React from "react";
+import { CalendarClock, HandCoins, MapPinned } from "lucide-react";
+import ModuleDashboard from "../../dashboard/components/ModuleDashboard";
 
-const CollectionDashboard = () => {
+export default function CollectionDashboard() {
   return (
-    <div>
-      <h1>Credit Dashboard</h1>
-      <p>Welcome to Collection Management.</p>
-    </div>
+    <ModuleDashboard
+      eyebrow="COLLECTION"
+      title="Collections overview"
+      description="Stay focused on repayment follow-ups and daily collection activity."
+      accent="green"
+      shortcuts={[
+        {
+          title: "Collection activity",
+          description: "Keep track of day-to-day repayment follow-ups.",
+          icon: HandCoins,
+        },
+        {
+          title: "Due schedule",
+          description: "Keep upcoming collection dates in view.",
+          icon: CalendarClock,
+        },
+        {
+          title: "Field operations",
+          description: "Organize collection work across your service areas.",
+          icon: MapPinned,
+        },
+      ]}
+    />
   );
-};
-
-export default CollectionDashboard;
+}

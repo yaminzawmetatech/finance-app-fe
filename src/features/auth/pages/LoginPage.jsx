@@ -5,9 +5,7 @@ import {
   Alert,
   Box,
   Button,
-  Container,
   MenuItem,
-  Paper,
   TextField,
   Typography,
 } from "@mui/material";
@@ -84,66 +82,65 @@ export default function LoginPage() {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Paper
-          elevation={4}
-          sx={{
-            p: 4,
-            width: "100%",
-            borderRadius: 3,
-          }}
-        >
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            textAlign="center"
-            gutterBottom
-          >
-            Microfinance System
+    <Box className="login-page">
+      <section className="login-brand-panel">
+        <div className="login-brand-content">
+          <img
+            className="login-logo"
+            src="/fortinos-logo.png"
+            alt="Fortinos IT Solutions"
+          />
+          <div className="login-brand-copy">
+            <span className="login-brand-eyebrow">FINANCIAL OPERATIONS PLATFORM</span>
+            <Typography component="h1" className="login-brand-title">
+              Clarity for every
+              <br />
+              financial decision.
+            </Typography>
+            <Typography className="login-brand-description">
+              A connected workspace to manage your people, lending, and
+              day-to-day operations with confidence.
+            </Typography>
+          </div>
+          <div className="login-brand-footer">
+            <span className="login-brand-dot" />
+            Built for smarter financial operations
+          </div>
+        </div>
+        <div className="login-decoration login-decoration--one" />
+        <div className="login-decoration login-decoration--two" />
+      </section>
+
+      <section className="login-form-panel">
+        <div className="login-form-wrap">
+          <div className="login-mobile-logo">
+            <img src="/fortinos-logo.png" alt="Fortinos IT Solutions" />
+          </div>
+          <span className="login-form-eyebrow">WELCOME BACK</span>
+          <Typography component="h2" className="login-form-title">
+            Sign in to your account
+          </Typography>
+          <Typography className="login-form-description">
+            Enter your details to access your company workspace.
           </Typography>
 
-          <Typography
-            color="text.secondary"
-            textAlign="center"
-            sx={{ mb: 3 }}
-          >
-            Sign in to your company account
-          </Typography>
-
-          <Box
-            component="form"
-            onSubmit={handleLogin}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
+          <Box component="form" onSubmit={handleLogin} className="login-form">
             <TextField
               select
-              label="Test Company"
+              label="Choose a test company"
               value={email}
-              onChange={(event) =>
-                selectTestAccount(event.target.value)
-              }
+              onChange={(event) => selectTestAccount(event.target.value)}
               fullWidth
             >
               {TEST_ACCOUNTS.map((account) => (
-                <MenuItem
-                  key={account.email}
-                  value={account.email}
-                >
+                <MenuItem key={account.email} value={account.email}>
                   {account.label}
                 </MenuItem>
               ))}
             </TextField>
 
             <TextField
-              label="Email"
+              label="Email address"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -162,33 +159,31 @@ export default function LoginPage() {
               fullWidth
             />
 
-            {error && (
-              <Alert severity="error">
-                {error}
-              </Alert>
-            )}
+            {error && <Alert severity="error">{error}</Alert>}
 
             <Button
               type="submit"
               variant="contained"
               size="large"
               fullWidth
-              sx={{ py: 1.3 }}
+              className="login-submit"
             >
-              Login
+              Sign in
             </Button>
           </Box>
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 3 }}
-          >
-            Testing: Select a company above or enter its credentials.
-            All test accounts use password 123456.
+          <div className="login-help">
+            <span className="login-help-mark">i</span>
+            <p>
+              Demo access is enabled. Choose a company above; all test
+              accounts use password <strong>123456</strong>.
+            </p>
+          </div>
+          <Typography className="login-copyright">
+            © Fortinos IT Solutions
           </Typography>
-        </Paper>
-      </Box>
-    </Container>
+        </div>
+      </section>
+    </Box>
   );
 }

@@ -1,50 +1,69 @@
-import { Box, Grid, Paper, Typography } from "@mui/material";
+import {
+  ClipboardList,
+  FileCheck2,
+  FileClock,
+  UsersRound,
+} from "lucide-react";
+import ModuleDashboard from "../../../dashboard/components/ModuleDashboard";
 
 const summaryCards = [
   {
     title: "Total Applications",
     value: 1250,
+    note: "Across all applications",
+    icon: ClipboardList,
   },
   {
     title: "Pending Applications",
     value: 85,
+    note: "Awaiting review",
+    icon: FileClock,
   },
   {
     title: "Pending Assessments",
     value: 42,
+    note: "Ready for assessment",
+    icon: UsersRound,
   },
   {
     title: "Approved Applications",
     value: 980,
+    note: "Successfully approved",
+    icon: FileCheck2,
   },
 ];
 
 export default function CreditDashboard() {
   return (
-    <Box>
-      <Typography variant="h5" fontWeight={700} mb={1}>
-        Credit Management Dashboard
-      </Typography>
-
-      <Typography color="text.secondary" mb={3}>
-        Overview of credit applications and operations.
-      </Typography>
-
-      <Grid container spacing={2}>
-        {summaryCards.map((card) => (
-          <Grid item xs={12} sm={6} md={3} key={card.title}>
-            <Paper elevation={0} sx={{ p: 3, border: "1px solid #EAECF0" }}>
-              <Typography color="text.secondary" variant="body2">
-                {card.title}
-              </Typography>
-
-              <Typography variant="h4" fontWeight={700} mt={1}>
-                {card.value.toLocaleString()}
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+    <ModuleDashboard
+      eyebrow="CREDIT MANAGEMENT"
+      title="Credit at a glance"
+      description="Overview of credit applications and operations."
+      accent="orange"
+      highlights={summaryCards.map((card) => ({
+        ...card,
+        value: card.value.toLocaleString(),
+      }))}
+      shortcuts={[
+        {
+          title: "Applications",
+          description: "Review and manage credit applications.",
+          href: "/credit-management/applications",
+          icon: ClipboardList,
+        },
+        {
+          title: "Assessments",
+          description: "Continue with pending credit assessments.",
+          href: "/credit-management/assessments",
+          icon: FileCheck2,
+        },
+        {
+          title: "Application reports",
+          description: "View application reporting and summaries.",
+          href: "/credit-management/reports/applications",
+          icon: FileClock,
+        },
+      ]}
+    />
   );
 }

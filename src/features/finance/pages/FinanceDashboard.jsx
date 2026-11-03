@@ -1,12 +1,30 @@
-import React from "react";
+import { ArrowLeftRight, ChartNoAxesCombined, Wallet } from "lucide-react";
+import ModuleDashboard from "../../dashboard/components/ModuleDashboard";
 
-const FinanceDashboard = () => {
+export default function FinanceDashboard() {
   return (
-    <div>
-      <h1>Credit Dashboard</h1>
-      <p>Welcome to Finance Management.</p>
-    </div>
+    <ModuleDashboard
+      eyebrow="FINANCE"
+      title="Finance overview"
+      description="A clear starting point for your organization's financial operations."
+      accent="slate"
+      shortcuts={[
+        {
+          title: "Financial overview",
+          description: "Review the key areas of your finance workspace.",
+          icon: ChartNoAxesCombined,
+        },
+        {
+          title: "Accounts & balances",
+          description: "Keep your account activity organized.",
+          icon: Wallet,
+        },
+        {
+          title: "Transactions",
+          description: "Follow the flow of day-to-day transactions.",
+          icon: ArrowLeftRight,
+        },
+      ]}
+    />
   );
-};
-
-export default FinanceDashboard;
+}
