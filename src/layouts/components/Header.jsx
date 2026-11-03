@@ -1,4 +1,3 @@
-
 import {
   AppBar,
   Avatar,
@@ -22,11 +21,13 @@ import { clearCompanyContext } from "../../features/subscriptions/slices/company
 
 function getPageTitle(pathname) {
   for (const item of NAVIGATION_CONFIG) {
-    if (item.type === "group") {
+    if (item.type === "group" || item.children) {
       if (pathname === `/${item.id}`) return item.label;
-      const child = item.children.find((entry) => pathname.startsWith(entry.path));
+      const child = item.children?.find((entry) =>
+        pathname.startsWith(entry.path)
+      );
       if (child) return child.label;
-    } else if (pathname.startsWith(item.path)) {
+    } else if (item.path && pathname.startsWith(item.path)) {
       return item.label;
     }
   }
@@ -34,7 +35,11 @@ function getPageTitle(pathname) {
   return "Workspace";
 }
 
-export default function Header({ onMenuClick, isMobile = false, menuOpen = true }) {
+export default function Header({
+  onMenuClick,
+  isMobile = false,
+  menuOpen = true,
+}) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,19 +53,27 @@ export default function Header({ onMenuClick, isMobile = false, menuOpen = true 
   const searchItems = useMemo(
     () =>
       NAVIGATION_CONFIG.flatMap((item) =>
-        item.type === "group"
-          ? item.children.filter((child) =>
-              activeModules.includes(child.module)
+        item.type === "group" || item.children
+          ? (item.children || []).filter((child) =>
+              !child.module || activeModules.includes(child.module)
             )
-          : activeModules.includes(item.module)
-            ? [{ label: item.label, path: item.path, icon: item.icon }]
+          : !item.module || activeModules.includes(item.module)
+            ? [{ label: item.label, path: item.path }]
             : []
       ),
     [activeModules]
   );
   const searchResults = searchItems
-    .filter((item) => item.label.toLowerCase().includes(search.trim().toLowerCase()))
+    .filter((item) =>
+      item.label.toLowerCase().includes(search.trim().toLowerCase())
+    )
     .slice(0, 5);
+  const initials = (user?.name || "User")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
 
   useEffect(() => {
     const handleShortcut = (event) => {
@@ -73,12 +86,6 @@ export default function Header({ onMenuClick, isMobile = false, menuOpen = true 
     document.addEventListener("keydown", handleShortcut);
     return () => document.removeEventListener("keydown", handleShortcut);
   }, []);
-  const initials = (user?.name || "User")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join("");
 
   const handleLogout = () => {
     mockAuthService.logout();
@@ -93,11 +100,13 @@ export default function Header({ onMenuClick, isMobile = false, menuOpen = true 
         <IconButton
           className="app-mobile-menu"
           aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={menuOpen}
           onClick={onMenuClick}
           edge="start"
         >
           {isMobile && menuOpen ? <X size={21} /> : <Menu size={21} />}
         </IconButton>
+
         <Box className="app-topbar-heading">
           <Typography className="app-topbar-kicker">
             {company?.name || "FINANCIAL WORKSPACE"}
@@ -106,6 +115,7 @@ export default function Header({ onMenuClick, isMobile = false, menuOpen = true 
             {title}
           </Typography>
         </Box>
+
         <ClickAwayListener onClickAway={() => setSearchOpen(false)}>
           <Box className="app-topbar-search-wrap">
             <Box className={`app-topbar-search${searchOpen ? " is-focused" : ""}`}>
@@ -127,7 +137,7 @@ export default function Header({ onMenuClick, isMobile = false, menuOpen = true 
                 placeholder="Search pages..."
                 inputProps={{ "aria-label": "Search pages" }}
               />
-              {search && (
+              {search ? (
                 <IconButton
                   className="app-topbar-search-clear"
                   aria-label="Clear search"
@@ -135,8 +145,9 @@ export default function Header({ onMenuClick, isMobile = false, menuOpen = true 
                 >
                   <X size={15} />
                 </IconButton>
+              ) : (
+                <kbd>Ctrl K</kbd>
               )}
-              {!search && <kbd>Ctrl K</kbd>}
             </Box>
             {searchOpen && (
               <Paper className="app-topbar-search-results" elevation={8}>
@@ -167,6 +178,7 @@ export default function Header({ onMenuClick, isMobile = false, menuOpen = true 
             )}
           </Box>
         </ClickAwayListener>
+
         <Box className="app-topbar-actions">
           <Box className="app-topbar-company">
             <span className="app-topbar-company-dot" />

@@ -1,9 +1,8 @@
 import { Box, useMediaQuery } from "@mui/material";
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-
-import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
 
 export default function MainLayout() {
   const isMobile = useMediaQuery("(max-width: 899px)");
@@ -25,7 +24,6 @@ export default function MainLayout() {
     >
       <Sidebar
         isMobile={isMobile}
-        collapsed={false}
         mobileOpen={isMobile && mobileMenuOpen}
         width={sidebarWidth}
         onClose={() => setMobileMenuOpen(false)}
@@ -59,7 +57,12 @@ export default function MainLayout() {
           sx={{
             flex: 1,
             minHeight: 0,
-            p: { xs: 2, md: 3 },
+            p: {
+              xs: 2,
+              sm: 2.5,
+              md: 3,
+              lg: 3.5,
+            },
             width: "100%",
             minWidth: 0,
             overflowY: "auto",
@@ -68,6 +71,7 @@ export default function MainLayout() {
         >
           <Outlet />
         </Box>
+
         <Box component="footer" className="app-shell-footer">
           <span>© Fortinos IT Solutions</span>
           <span>Financial operations workspace</span>
