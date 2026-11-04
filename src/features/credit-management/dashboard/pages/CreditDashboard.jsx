@@ -36,10 +36,6 @@ const summaryCards = [
 export default function CreditDashboard() {
   return (
     <ModuleDashboard
-      eyebrow="CREDIT MANAGEMENT"
-      title="Credit at a glance"
-      description="Overview of credit applications and operations."
-      accent="orange"
       highlights={summaryCards.map((card) => ({
         ...card,
         value: card.value.toLocaleString(),

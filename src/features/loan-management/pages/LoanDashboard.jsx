@@ -4,10 +4,6 @@ import ModuleDashboard from "../../dashboard/components/ModuleDashboard";
 export default function LoanDashboard() {
   return (
     <ModuleDashboard
-      eyebrow="LOAN MANAGEMENT"
-      title="Loan operations"
-      description="A focused workspace for loan products, approvals, and repayments."
-      accent="blue"
       shortcuts={[
         {
           title: "Loan applications",

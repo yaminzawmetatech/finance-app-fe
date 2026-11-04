@@ -19,7 +19,7 @@ export default function MainLayout() {
         minHeight: "100vh",
         height: "100dvh",
         overflow: "hidden",
-        bgcolor: "#102858",
+        bgcolor: "#ffffff",
       }}
     >
       <Sidebar

@@ -4,10 +4,6 @@ import ModuleDashboard from "../../dashboard/components/ModuleDashboard";
 export default function FinanceDashboard() {
   return (
     <ModuleDashboard
-      eyebrow="FINANCE"
-      title="Finance overview"
-      description="A clear starting point for your organization's financial operations."
-      accent="slate"
       shortcuts={[
         {
           title: "Financial overview",

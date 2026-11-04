@@ -4,10 +4,6 @@ import ModuleDashboard from "../../dashboard/components/ModuleDashboard";
 export default function AdministrationDashboard() {
   return (
     <ModuleDashboard
-      eyebrow="ADMINISTRATION"
-      title="Welcome to your workspace"
-      description="Keep your team, access, and company operations organized from one place."
-      accent="orange"
       shortcuts={[
         {
           title: "User management",

@@ -4,10 +4,6 @@ import ModuleDashboard from "../../dashboard/components/ModuleDashboard";
 export default function CollectionDashboard() {
   return (
     <ModuleDashboard
-      eyebrow="COLLECTION"
-      title="Collections overview"
-      description="Stay focused on repayment follow-ups and daily collection activity."
-      accent="green"
       shortcuts={[
         {
           title: "Collection activity",

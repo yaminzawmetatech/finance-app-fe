@@ -5,27 +5,27 @@ const theme = createTheme({
     mode: "light",
 
     primary: {
-      main: "#F07E2C",
+      main: "#F15A24",
       light: "#FFF0E5",
-      dark: "#D96518",
+      dark: "#C94A1A",
       contrastText: "#FFFFFF",
     },
 
     secondary: {
-      main: "#235DBB",
+      main: "#34383f",
     },
 
     background: {
-      default: "#F3F6FC",
+      default: "#FFFFFF",
       paper: "#FFFFFF",
     },
 
     text: {
       primary: "#292E37",
-      secondary: "#68758C",
+      secondary: "#72757b",
     },
 
-    divider: "#E3E9F4",
+    divider: "#eee9e5",
   },
 
   typography: {
@@ -99,7 +99,7 @@ const theme = createTheme({
 
         containedPrimary: {
           "&:hover": {
-            backgroundColor: "#D96518",
+            backgroundColor: "#C94A1A",
             boxShadow: "none",
           },
         },
@@ -109,9 +109,9 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          border: "1px solid #E3E9F4",
-          boxShadow: "0 2px 8px rgba(24, 48, 91, 0.04)",
+          border: 0,
+          borderRadius: 0,
+          boxShadow: "none",
         },
       },
     },
@@ -129,11 +129,11 @@ const theme = createTheme({
           fontSize: "13px",
 
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#B9CEF2",
+            borderColor: "#f1a184",
           },
 
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#F07E2C",
+            borderColor: "#F15A24",
             borderWidth: "1px",
           },
         },
@@ -151,14 +151,14 @@ const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderColor: "#E3E9F4",
+          borderColor: "#eee9e5",
           fontSize: "13px",
           padding: "12px 16px",
         },
 
         head: {
-          backgroundColor: "#F3F6FC",
-          color: "#405779",
+          backgroundColor: "#fff7f2",
+          color: "#45403d",
           fontWeight: 650,
         },
       },

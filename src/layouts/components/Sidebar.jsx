@@ -110,10 +110,10 @@ export default function Sidebar({
           border: 0,
           height: "100dvh",
           minHeight: "100dvh",
-          backgroundColor: "#0c2048",
-          color: "#c1cde2",
+          backgroundColor: "#ffffff",
+          color: "#4b4d52",
           borderRight:
-            width > 0 || isMobile ? "1px solid rgba(255,255,255,0.08)" : 0,
+            width > 0 || isMobile ? "1px solid #eee9e5" : 0,
           overflowY: "auto",
           overflowX: "hidden",
           scrollbarWidth: "none",
