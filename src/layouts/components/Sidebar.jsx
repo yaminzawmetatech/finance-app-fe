@@ -327,7 +327,11 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { NAVIGATION_CONFIG } from "../../config/navigationConfig";
+// import { NAVIGATION_CONFIG } from "../../config/navigationConfig";
+import { NAVIGATION_CONFIG } from "../../config/navigation";
+
+import { usePermission } from "../../hooks/usePermission";
+
 
 const DRAWER_WIDTH = 260;
 
@@ -379,6 +383,8 @@ const ICONS = {
 export default function Sidebar() {
   const location = useLocation();
 
+  const { permissions } = usePermission();
+
   const {
     activeModules = [],
     subscriptionLoaded,
@@ -394,32 +400,58 @@ export default function Sidebar() {
   };
 
   // Filter purchased modules
+  // const navigation = useMemo(() => {
+  //   if (!subscriptionLoaded) return [];
+
+  //   return NAVIGATION_CONFIG
+  //     .filter((item) => {
+  //       if (item.type === "core") return true;
+
+  //       return !item.module || activeModules.includes(item.module);
+  //     })
+  //     .map((item) => {
+  //       if (!item.children) return item;
+
+  //       const children = item.children.filter(
+  //         (child) =>
+  //           !child.module || activeModules.includes(child.module)
+  //       );
+
+  //       return {
+  //         ...item,
+  //         children,
+  //       };
+  //     })
+  //     .filter(
+  //       (item) => !item.children || item.children.length > 0
+  //     );
+  // }, [activeModules, subscriptionLoaded]);
+
+
   const navigation = useMemo(() => {
-    if (!subscriptionLoaded) return [];
+    const filterItems = (items) =>
+      items
+        .map((item) => {
+          if (!item.children) return item;
 
-    return NAVIGATION_CONFIG
-      .filter((item) => {
-        if (item.type === "core") return true;
+          return {
+            ...item,
+            children: filterItems(item.children),
+          };
+        })
+        .filter((item) => {
+          if (item.children) {
+            return item.children.length > 0;
+          }
 
-        return !item.module || activeModules.includes(item.module);
-      })
-      .map((item) => {
-        if (!item.children) return item;
+          return (
+            !item.permission ||
+            permissions.includes(item.permission)
+          );
+        });
 
-        const children = item.children.filter(
-          (child) =>
-            !child.module || activeModules.includes(child.module)
-        );
-
-        return {
-          ...item,
-          children,
-        };
-      })
-      .filter(
-        (item) => !item.children || item.children.length > 0
-      );
-  }, [activeModules, subscriptionLoaded]);
+    return filterItems(NAVIGATION_CONFIG);
+  }, [permissions]);
 
   const [openMenus, setOpenMenus] = useState({
     administration: true,
