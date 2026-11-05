@@ -193,32 +193,77 @@ const UsersList = () => {
       {
         accessorKey: "user_name",
         header: "User Name",
-        size: 200,
+        size: 180,
+      },
+      {
+        accessorKey: "father_name",
+        header: "Father Name",
+        size: 180,
+      },
+      {
+        accessorKey: "dob",
+        header: "DOB",
+        size: 140,
+      },
+      {
+        accessorKey: "nrc",
+        header: "NRC",
+        size: 220,
+      },
+      {
+        accessorKey: "csc",
+        header: "CSC",
+        size: 120,
       },
       {
         accessorKey: "personal_email",
         header: "Personal Email",
-        size: 250,
+        size: 220,
       },
       {
         accessorKey: "office_email",
         header: "Office Email",
-        size: 250,
+        size: 220,
       },
       {
-        accessorFn: (row) => row.role?.name || row.role_name || "",
-        id: "role",
+        accessorKey: "personal_phone",
+        header: "Personal Phone",
+        size: 150,
+      },
+      {
+        accessorKey: "company_phone",
+        header: "Company Phone",
+        size: 150,
+      },
+      {
+        accessorKey: "level",
+        header: "Level",
+        size: 100,
+      },
+      {
+        accessorFn: (row) => row.department || row.department_name || "",
+        id: "department",
+        header: "Department",
+        size: 200,
+      },
+      {
+        accessorFn: (row) => row.position || row.position_name || "",
+        id: "position",
+        header: "Position",
+        size: 180,
+      },
+      {
+        accessorFn: (row) =>
+          row.userGroup || row.role?.name || row.role_name || "",
+        id: "userGroup",
         header: "User Group",
         size: 180,
       },
       {
-        accessorKey: "personal_phone",
-        header: "Phone",
-        size: 150,
-      },
-      {
-        accessorKey: "created_at",
-        header: "Created Date",
+        accessorFn: (row) =>
+          row.customer_web_role_name || row.customerWebRole?.name || "",
+        id: "customerWebRole",
+        header: "Customer Web Role",
         size: 180,
       },
     ],

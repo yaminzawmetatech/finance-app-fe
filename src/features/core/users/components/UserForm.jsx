@@ -34,6 +34,9 @@ const parseNrc = (value) => {
 
 const normalizeFormValue = (value) => (value === "---" ? "" : value ?? "");
 
+const normalizeDateValue = (value) =>
+  value && value !== "---" ? String(value).slice(0, 10) : "";
+
 const toNullableNumber = (value) =>
   value === "" || value == null || value === "---" ? null : Number(value);
 
@@ -62,9 +65,14 @@ const UserForm = ({
   } = useForm({
     defaultValues: {
       user_name: "",
+      father_name: "",
+      dob: "",
+      csc: "",
+      level: "",
       personal_email: "",
       office_email: "",
       personal_phone: "",
+      company_phone: "",
       role_id: "",
       department_id: "",
       position_id: "",
@@ -130,9 +138,14 @@ const UserForm = ({
         "";
       reset({
         user_name: normalizeFormValue(editData?.user_name),
+        father_name: normalizeFormValue(editData?.father_name),
+        dob: normalizeDateValue(editData?.dob),
+        csc: normalizeFormValue(editData?.csc),
+        level: normalizeFormValue(editData?.level),
         personal_email: normalizeFormValue(editData?.personal_email),
         office_email: normalizeFormValue(editData?.office_email),
         personal_phone: normalizeFormValue(editData?.personal_phone),
+        company_phone: normalizeFormValue(editData?.company_phone),
         role_id: normalizeFormValue(editData?.role_id ?? editData?.role?.id),
         department_id:
           normalizeFormValue(
@@ -169,6 +182,7 @@ const UserForm = ({
       position_id: toNullableNumber(data.position_id),
       nrc_state_id: toNullableNumber(data.nrc_state_id),
       nrc_township_id: toNullableNumber(data.nrc_township_id),
+      nrc: formattedNrc || null,
       nrc_number: data.nrc_number || null,
       nrc_remark: data.nrc_remark || null,
     };
@@ -222,6 +236,32 @@ const UserForm = ({
 
             <TextField
               fullWidth
+              label="Father Name"
+              {...register("father_name")}
+            />
+
+            <TextField
+              fullWidth
+              label="Date of Birth"
+              type="date"
+              slotProps={{ inputLabel: { shrink: true } }}
+              {...register("dob")}
+            />
+
+            <TextField
+              fullWidth
+              label="CSC"
+              {...register("csc")}
+            />
+
+            <TextField
+              fullWidth
+              label="Level"
+              {...register("level")}
+            />
+
+            <TextField
+              fullWidth
               label="Personal email"
               type="email"
               {...register("personal_email", {
@@ -240,8 +280,14 @@ const UserForm = ({
 
             <TextField
               fullWidth
-              label="Phone"
+              label="Personal Phone"
               {...register("personal_phone")}
+            />
+
+            <TextField
+              fullWidth
+              label="Company Phone"
+              {...register("company_phone")}
             />
 
             <Controller
