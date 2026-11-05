@@ -2,22 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Paper,
-  TextField,
   Typography,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
-import Table from "../../../components/tables/Table";
-import DeleteConfirmationModal from "../../../components/common/DeleteConfirmationModal";
+import Table from "../../../../components/tables/Table";
+import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
+import PositionForm from "../components/PositionForm";
 import {
   showErrorToast,
   showSuccessToast,
-} from "../../../components/common/ToastMessage";
+} from "../../../../components/common/ToastMessage";
 import positionsService from "../services/positionsService";
 
 const getItems = (response) => {
@@ -35,13 +29,6 @@ export default function PositionsPage() {
   const [editPosition, setEditPosition] = useState(null);
   const [deletePosition, setDeletePosition] = useState(null);
   const [loadError, setLoadError] = useState("");
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({ defaultValues: { name: "", description: "" } });
-
   const loadPositions = useCallback(async () => {
     try {
       const response = await positionsService.getPositions();
@@ -76,10 +63,6 @@ export default function PositionsPage() {
 
   const openForm = (position = null) => {
     setEditPosition(position);
-    reset({
-      name: position?.name || "",
-      description: position?.description === "---" ? "" : position?.description || "",
-    });
     setFormOpen(true);
   };
 
@@ -151,42 +134,13 @@ export default function PositionsPage() {
         />
       </Paper>
 
-      <Dialog
+      <PositionForm
         open={formOpen}
-        onClose={() => !isSaving && setFormOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          {editPosition ? "Edit Position" : "Create Position"}
-        </DialogTitle>
-        <Box component="form" onSubmit={handleSubmit(handleSave)}>
-          <DialogContent sx={{ display: "grid", gap: 2, pt: 1 }}>
-            <TextField
-              label="Position Name"
-              fullWidth
-              {...register("name", { required: "Position name is required." })}
-              error={Boolean(errors.name)}
-              helperText={errors.name?.message}
-            />
-            <TextField
-              label="Description"
-              fullWidth
-              multiline
-              minRows={2}
-              {...register("description")}
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setFormOpen(false)} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="contained" disabled={isSaving}>
-              {isSaving ? "Saving..." : editPosition ? "Save Changes" : "Create"}
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleSave}
+        editData={editPosition}
+        isLoading={isSaving}
+      />
 
       <DeleteConfirmationModal
         isOpen={Boolean(deletePosition)}

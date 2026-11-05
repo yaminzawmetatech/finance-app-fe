@@ -3,22 +3,17 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Paper,
-  TextField,
   Typography,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
-import Table from "../../../components/tables/Table";
-import DeleteConfirmationModal from "../../../components/common/DeleteConfirmationModal";
+import Table from "../../../../components/tables/Table";
+import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
+import NrcStateForm from "../components/NrcStateForm";
 import {
   showErrorToast,
   showSuccessToast,
-} from "../../../components/common/ToastMessage";
-import nrcService from "../services/nrcService";
+} from "../../../../components/common/ToastMessage";
+import nrcStatesService from "../services/nrcStatesService";
 
 const getItems = (response) => {
   const payload = response?.data ?? response;
@@ -42,8 +37,6 @@ const getErrorMessage = (error, fallback) => {
   return fallback;
 };
 
-const EMPTY_STATE = { name: "", state_code: "", description: "" };
-
 export default function NrcStatePage() {
   const [states, setStates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,16 +48,9 @@ export default function NrcStatePage() {
   const [isImporting, setIsImporting] = useState(false);
   const importInputRef = useRef(null);
   const [loadError, setLoadError] = useState("");
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({ defaultValues: EMPTY_STATE });
-
   const loadStates = useCallback(async () => {
     try {
-      const response = await nrcService.getStates();
+      const response = await nrcStatesService.getStates();
       setStates(getItems(response));
       setLoadError("");
     } catch (error) {
@@ -91,16 +77,6 @@ export default function NrcStatePage() {
 
   const openForm = (state = null) => {
     setEditState(state);
-    reset(
-      state
-        ? {
-            name: state.name || "",
-            state_code: state.state_code ?? "",
-            description:
-              state.description === "---" ? "" : state.description || "",
-          }
-        : EMPTY_STATE
-    );
     setFormOpen(true);
   };
 
@@ -114,9 +90,9 @@ export default function NrcStatePage() {
 
     try {
       if (editState) {
-        await nrcService.updateState(editState.uuid || editState.id, payload);
+        await nrcStatesService.updateState(editState.uuid || editState.id, payload);
       } else {
-        await nrcService.createState(payload);
+        await nrcStatesService.createState(payload);
       }
       showSuccessToast(
         `NRC State ${editState ? "updated" : "created"}.`
@@ -136,10 +112,10 @@ export default function NrcStatePage() {
     setIsSaving(true);
     try {
       if (deleteConfirmation.type === "batch") {
-        await nrcService.batchDeleteStates(deleteConfirmation.uuids);
+        await nrcStatesService.batchDeleteStates(deleteConfirmation.uuids);
         showSuccessToast("Selected NRC states deleted.");
       } else {
-        await nrcService.deleteState(
+        await nrcStatesService.deleteState(
           deleteConfirmation.state.uuid || deleteConfirmation.state.id
         );
         showSuccessToast("NRC State deleted.");
@@ -163,7 +139,7 @@ export default function NrcStatePage() {
 
     setIsImporting(true);
     try {
-      const response = await nrcService.importStates(file);
+      const response = await nrcStatesService.importStates(file);
       const payload = response?.data ?? response;
       const rowCount = payload?.rowCount;
       setRowSelection({});
@@ -249,48 +225,13 @@ export default function NrcStatePage() {
         />
       </Paper>
 
-      <Dialog
+      <NrcStateForm
         open={formOpen}
-        onClose={() => !isSaving && setFormOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          {editState ? "Edit NRC State" : "Create NRC State"}
-        </DialogTitle>
-        <Box component="form" onSubmit={handleSubmit(handleSave)}>
-          <DialogContent sx={{ display: "grid", gap: 2, pt: 1 }}>
-            <TextField
-              label="State Name"
-              {...register("name", { required: "State name is required." })}
-              error={Boolean(errors.name)}
-              helperText={errors.name?.message}
-            />
-            <TextField
-              label="State Code"
-              type="number"
-              {...register("state_code", {
-                required: "State code is required.",
-                setValueAs: (value) => (value === "" ? "" : Number(value)),
-              })}
-              error={Boolean(errors.state_code)}
-              helperText={errors.state_code?.message}
-            />
-            <TextField
-              label="Description"
-              {...register("description")}
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setFormOpen(false)} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="contained" disabled={isSaving}>
-              {isSaving ? "Saving..." : editState ? "Save Changes" : "Create"}
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleSave}
+        editData={editState}
+        isLoading={isSaving}
+      />
 
       <DeleteConfirmationModal
         isOpen={Boolean(deleteConfirmation)}

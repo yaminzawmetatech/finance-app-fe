@@ -3,21 +3,16 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Paper,
-  TextField,
   Typography,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
-import Table from "../../../components/tables/Table";
-import DeleteConfirmationModal from "../../../components/common/DeleteConfirmationModal";
+import Table from "../../../../components/tables/Table";
+import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
+import DepartmentForm from "../components/DepartmentForm";
 import {
   showErrorToast,
   showSuccessToast,
-} from "../../../components/common/ToastMessage";
+} from "../../../../components/common/ToastMessage";
 import departmentsService from "../services/departmentsService";
 
 const getItems = (response) => {
@@ -42,8 +37,6 @@ const getErrorMessage = (error, fallback) => {
   return fallback;
 };
 
-const EMPTY_DEPARTMENT = { name: "", description: "" };
-
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,13 +46,6 @@ export default function DepartmentsPage() {
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [rowSelection, setRowSelection] = useState({});
   const [loadError, setLoadError] = useState("");
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({ defaultValues: EMPTY_DEPARTMENT });
-
   const loadDepartments = useCallback(async () => {
     try {
       const response = await departmentsService.getDepartments();
@@ -89,17 +75,6 @@ export default function DepartmentsPage() {
 
   const openForm = (department = null) => {
     setEditDepartment(department);
-    reset(
-      department
-        ? {
-            name: department.name || "",
-            description:
-              department.description === "---"
-                ? ""
-                : department.description || "",
-          }
-        : EMPTY_DEPARTMENT
-    );
     setFormOpen(true);
   };
 
@@ -218,46 +193,13 @@ export default function DepartmentsPage() {
         />
       </Paper>
 
-      <Dialog
+      <DepartmentForm
         open={formOpen}
-        onClose={() => !isSaving && setFormOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          {editDepartment ? "Edit Department" : "Create Department"}
-        </DialogTitle>
-        <Box component="form" onSubmit={handleSubmit(handleSave)}>
-          <DialogContent sx={{ display: "grid", gap: 2, pt: 1 }}>
-            <TextField
-              label="Department Name"
-              fullWidth
-              {...register("name", { required: "Department name is required." })}
-              error={Boolean(errors.name)}
-              helperText={errors.name?.message}
-            />
-            <TextField
-              label="Description"
-              fullWidth
-              multiline
-              minRows={2}
-              {...register("description")}
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setFormOpen(false)} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="contained" disabled={isSaving}>
-              {isSaving
-                ? "Saving..."
-                : editDepartment
-                  ? "Save Changes"
-                  : "Create"}
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleSave}
+        editData={editDepartment}
+        isLoading={isSaving}
+      />
 
       <DeleteConfirmationModal
         isOpen={Boolean(deleteConfirmation)}

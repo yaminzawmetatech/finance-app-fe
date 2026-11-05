@@ -24,11 +24,11 @@ import CollectionDashboard from
 import FinanceDashboard from
   "../features/finance/pages/FinanceDashboard";
 import UsersList from "../features/core/users/pages/UsersList";
-import RolesPage from "../features/administration/pages/RolesPage";
-import PositionsPage from "../features/administration/pages/PositionsPage";
-import NrcStatePage from "../features/administration/pages/NrcStatePage";
-import NrcTownshipPage from "../features/administration/pages/NrcTownshipPage";
-import DepartmentsPage from "../features/administration/pages/DepartmentsPage";
+import RolesPage from "../features/core/roles/pages/RolesPage";
+import PositionsPage from "../features/core/positions/pages/PositionsPage";
+import NrcStatePage from "../features/core/nrc-states/pages/NrcStatePage";
+import NrcTownshipPage from "../features/core/nrc-townships/pages/NrcTownshipPage";
+import DepartmentsPage from "../features/core/departments/pages/DepartmentsPage";
 
 function RequireAuth() {
   const isAuthenticated = useSelector(

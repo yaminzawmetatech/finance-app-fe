@@ -1,4 +1,4 @@
-import axiosInstance from "../../../core/api/axiosInstance";
+import axiosInstance from "../../../../core/api/axiosInstance";
 
 const DEPARTMENTS_ENDPOINT = "departments";
 

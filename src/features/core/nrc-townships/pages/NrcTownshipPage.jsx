@@ -3,23 +3,18 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  MenuItem,
   Paper,
-  TextField,
   Typography,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
-import Table from "../../../components/tables/Table";
-import DeleteConfirmationModal from "../../../components/common/DeleteConfirmationModal";
+import Table from "../../../../components/tables/Table";
+import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
+import NrcTownshipForm from "../components/NrcTownshipForm";
 import {
   showErrorToast,
   showSuccessToast,
-} from "../../../components/common/ToastMessage";
-import nrcService from "../services/nrcService";
+} from "../../../../components/common/ToastMessage";
+import nrcStatesService from "../../nrc-states/services/nrcStatesService";
+import nrcTownshipsService from "../services/nrcTownshipsService";
 
 const getItems = (response) => {
   const payload = response?.data ?? response;
@@ -43,13 +38,6 @@ const getErrorMessage = (error, fallback) => {
   return fallback;
 };
 
-const EMPTY_TOWNSHIP = {
-  name: "",
-  township_nrc_code: "",
-  n_r_c_state_id: "",
-  description: "",
-};
-
 export default function NrcTownshipPage() {
   const [townships, setTownships] = useState([]);
   const [states, setStates] = useState([]);
@@ -62,16 +50,9 @@ export default function NrcTownshipPage() {
   const [isImporting, setIsImporting] = useState(false);
   const importInputRef = useRef(null);
   const [loadError, setLoadError] = useState("");
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({ defaultValues: EMPTY_TOWNSHIP });
-
   const loadTownships = useCallback(async () => {
     try {
-      const response = await nrcService.getTownships();
+      const response = await nrcTownshipsService.getTownships();
       setTownships(getItems(response));
       setLoadError("");
     } catch (error) {
@@ -85,7 +66,7 @@ export default function NrcTownshipPage() {
 
   const loadStates = useCallback(async () => {
     try {
-      const response = await nrcService.getStates();
+      const response = await nrcStatesService.getStates();
       setStates(getItems(response));
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to load NRC states."));
@@ -117,18 +98,6 @@ export default function NrcTownshipPage() {
 
   const openForm = (township = null) => {
     setEditTownship(township);
-    reset(
-      township
-        ? {
-            ...EMPTY_TOWNSHIP,
-            ...township,
-            n_r_c_state_id:
-              township.n_r_c_state_id ?? township.nrc_state?.id ?? "",
-            description:
-              township.description === "---" ? "" : township.description || "",
-          }
-        : EMPTY_TOWNSHIP
-    );
     setFormOpen(true);
   };
 
@@ -144,12 +113,12 @@ export default function NrcTownshipPage() {
 
     try {
       if (editTownship) {
-        await nrcService.updateTownship(
+        await nrcTownshipsService.updateTownship(
           editTownship.uuid || editTownship.id,
           payload
         );
       } else {
-        await nrcService.createTownship(payload);
+        await nrcTownshipsService.createTownship(payload);
       }
       showSuccessToast(
         `NRC Township ${editTownship ? "updated" : "created"}.`
@@ -169,10 +138,10 @@ export default function NrcTownshipPage() {
     setIsSaving(true);
     try {
       if (deleteConfirmation.type === "batch") {
-        await nrcService.batchDeleteTownships(deleteConfirmation.uuids);
+        await nrcTownshipsService.batchDeleteTownships(deleteConfirmation.uuids);
         showSuccessToast("Selected NRC townships deleted.");
       } else {
-        await nrcService.deleteTownship(
+        await nrcTownshipsService.deleteTownship(
           deleteConfirmation.township.uuid ||
             deleteConfirmation.township.id
         );
@@ -197,7 +166,7 @@ export default function NrcTownshipPage() {
 
     setIsImporting(true);
     try {
-      const response = await nrcService.importTownships(file);
+      const response = await nrcTownshipsService.importTownships(file);
       const payload = response?.data ?? response;
       const rowCount = payload?.rowCount;
       setRowSelection({});
@@ -283,64 +252,14 @@ export default function NrcTownshipPage() {
         />
       </Paper>
 
-      <Dialog
+      <NrcTownshipForm
         open={formOpen}
-        onClose={() => !isSaving && setFormOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          {editTownship ? "Edit NRC Township" : "Create NRC Township"}
-        </DialogTitle>
-        <Box component="form" onSubmit={handleSubmit(handleSave)}>
-          <DialogContent sx={{ display: "grid", gap: 2, pt: 1 }}>
-            <TextField
-              select
-              label="State"
-              defaultValue=""
-              {...register("n_r_c_state_id", {
-                required: "State is required.",
-                setValueAs: (value) => (value === "" ? "" : Number(value)),
-              })}
-              error={Boolean(errors.n_r_c_state_id)}
-              helperText={errors.n_r_c_state_id?.message}
-            >
-              {states.map((state) => (
-                <MenuItem key={state.id} value={state.id}>
-                  {state.name} ({state.state_code})
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label="Township Name"
-              {...register("name", { required: "Township name is required." })}
-              error={Boolean(errors.name)}
-              helperText={errors.name?.message}
-            />
-            <TextField
-              label="Township NRC Code"
-              {...register("township_nrc_code", {
-                required: "Township NRC code is required.",
-              })}
-              error={Boolean(errors.township_nrc_code)}
-              helperText={errors.township_nrc_code?.message}
-            />
-            <TextField label="Description" {...register("description")} />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setFormOpen(false)} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="contained" disabled={isSaving}>
-              {isSaving
-                ? "Saving..."
-                : editTownship
-                  ? "Save Changes"
-                  : "Create"}
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleSave}
+        editData={editTownship}
+        isLoading={isSaving}
+        states={states}
+      />
 
       <DeleteConfirmationModal
         isOpen={Boolean(deleteConfirmation)}

@@ -1,4 +1,4 @@
-import axiosInstance from "../../../core/api/axiosInstance";
+import axiosInstance from "../../../../core/api/axiosInstance";
 
 const USER_GROUPS_ENDPOINT = "user-groups";
 const PERMISSIONS_ENDPOINT = "permissions";

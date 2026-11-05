@@ -20,10 +20,11 @@ import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
 
 import UserForm from "../components/UserForm";
-import userGroupsService from "../../../administration/services/userGroupsService";
-import positionsService from "../../../administration/services/positionsService";
-import departmentsService from "../../../administration/services/departmentsService";
-import nrcService from "../../../administration/services/nrcService";
+import userGroupsService from "../../roles/services/rolesService";
+import positionsService from "../../positions/services/positionsService";
+import departmentsService from "../../departments/services/departmentsService";
+import nrcStatesService from "../../nrc-states/services/nrcStatesService";
+import nrcTownshipsService from "../../nrc-townships/services/nrcTownshipsService";
 
 import {
   showSuccessToast,
@@ -100,7 +101,10 @@ const UsersList = () => {
 
   useEffect(() => {
     let active = true;
-    Promise.all([nrcService.getStates(), nrcService.getTownships()])
+    Promise.all([
+      nrcStatesService.getStates(),
+      nrcTownshipsService.getTownships(),
+    ])
       .then(([statesResponse, townshipsResponse]) => {
         const getItems = (response) => {
           const payload = response?.data ?? response;
