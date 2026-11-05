@@ -1,8 +1,28 @@
 import axiosInstance from "../../../../core/api/axiosInstance";
 
-const base_url = import.meta.env.VITE_API_URL;
+const API_URL = "users";
 
-const API_URL = `${base_url}users`;
+const getApiMessage = (message) => {
+  if (typeof message === "string") return message;
+  if (message && typeof message === "object") {
+    return Object.entries(message)
+      .flatMap(([field, errors]) => {
+        const messages = Array.isArray(errors) ? errors : [errors];
+        return messages.map((error) => `${field}: ${error}`);
+      })
+      .join("\n");
+  }
+  return "";
+};
+
+const ensureSuccessfulResponse = (data) => {
+  if (data?.success === false) {
+    throw new Error(
+      getApiMessage(data.message) || "Unable to save user."
+    );
+  }
+  return data;
+};
 
 // Get users
 const getUsers = async (userRole) => {
@@ -23,27 +43,27 @@ const getAllUsers = async (userRole) => {
 };
 
 // Delete user
-const deleteUsers = async (userCode) => {
-  const response = await axiosInstance.delete(API_URL + "/" + userCode);
+const deleteUser = async (userCode) => {
+  const response = await axiosInstance.delete(`${API_URL}/${userCode}`);
   return response.data;
 };
 
 const updateUser = async (userCode, userData) => {
-  const response = await axiosInstance.put(API_URL + "/" + userCode, userData);
+  const response = await axiosInstance.put(`${API_URL}/${userCode}`, userData);
 
-  return response.data;
+  return ensureSuccessfulResponse(response.data);
 };
 
 // Create new survery header
 const createUser = async (userData) => {
   const response = await axiosInstance.post(API_URL, userData);
 
-  return response.data;
+  return ensureSuccessfulResponse(response.data);
 };
 
 //Get User by Uuid
 const getUserByUuid = async (id) => {
-  const response = await axiosInstance.get(API_URL + "/" + id);
+  const response = await axiosInstance.get(`${API_URL}/${id}`);
   return response.data;
 };
 
@@ -77,7 +97,8 @@ const deleteCMCOUser = async (district_id, user_id) => {
 const usersService = {
   createUser,
   getUsers,
-  deleteUsers,
+  deleteUser,
+  deleteUsers: deleteUser,
   updateUser,
   getUserByUuid,
   assignCMCOUser,

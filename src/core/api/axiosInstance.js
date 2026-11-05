@@ -3,7 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
-const baseURL = import.meta.env.VITE_API_URL;
+const baseURL =
+  import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
 
 const axiosInstance = axios.create({
     baseURL,
@@ -13,6 +14,10 @@ axiosInstance.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 
 axiosInstance.interceptors.request.use(
   async (config) => {
+    if (!baseURL) {
+      return Promise.reject(new Error("VITE_API_URL is not configured."));
+    }
+
     try {
       const token = Cookies.get("jwt_authorization");
       if (token) {

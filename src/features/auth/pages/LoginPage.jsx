@@ -6,80 +6,46 @@ import {
   Box,
   Button,
   Container,
-  MenuItem,
   Paper,
   TextField,
   Typography,
 } from "@mui/material";
 
-import { mockAuthService } from "../services/mockAuthService";
+import authService from "../services/authService";
 import { setCredentials } from "../slices/authSlice";
 import { setCompanyContext } from "../../subscriptions/slices/companySlice";
-
-const TEST_ACCOUNTS = [
-  {
-    label: "Company A",
-    email: "admin@companya.com",
-    password: "123456",
-  },
-  {
-    label: "Company B",
-    email: "admin@companyb.com",
-    password: "123456",
-  },
-  {
-    label: "Company C",
-    email: "admin@companyc.com",
-    password: "123456",
-  },
-];
+import { MODULE_DEFINITIONS } from "../../../config/modules";
 
 export default function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("admin@companya.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
     try {
-      const session = mockAuthService.login(email, password);
-
-      dispatch(
-        setCredentials({
-          id: session.id,
-          name: session.name,
-          email: session.email,
-          companyId: session.company.id,
-        })
-      );
+      const user = await authService.login(email, password);
+      dispatch(setCredentials(user));
 
       dispatch(
         setCompanyContext({
-          company: session.company,
-          modules: session.modules,
+          company: null,
+          modules: MODULE_DEFINITIONS.map((module) => module.key),
         })
       );
 
       navigate("/", { replace: true });
     } catch (err) {
       setError(err.message || "Unable to log in.");
-    }
-  };
-
-  const selectTestAccount = (selectedEmail) => {
-    const account = TEST_ACCOUNTS.find(
-      (item) => item.email === selectedEmail
-    );
-
-    if (account) {
-      setEmail(account.email);
-      setPassword(account.password);
-      setError("");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -124,32 +90,14 @@ export default function LoginPage() {
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
             <TextField
-              select
-              label="Test Company"
-              value={email}
-              onChange={(event) =>
-                selectTestAccount(event.target.value)
-              }
-              fullWidth
-            >
-              {TEST_ACCOUNTS.map((account) => (
-                <MenuItem
-                  key={account.email}
-                  value={account.email}
-                >
-                  {account.label}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Email"
+              label="Email address"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              autoComplete="username"
+              autoComplete="email"
               required
               fullWidth
+              disabled={isSubmitting}
             />
 
             <TextField
@@ -160,6 +108,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
               fullWidth
+              disabled={isSubmitting}
             />
 
             {error && (
@@ -175,18 +124,9 @@ export default function LoginPage() {
               fullWidth
               sx={{ py: 1.3 }}
             >
-              Login
+              {isSubmitting ? "Signing in..." : "Sign in"}
             </Button>
           </Box>
-
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 3 }}
-          >
-            Testing: Select a company above or enter its credentials.
-            All test accounts use password 123456.
-          </Typography>
         </Paper>
       </Box>
     </Container>

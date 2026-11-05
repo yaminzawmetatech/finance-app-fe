@@ -20,6 +20,10 @@ import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
 
 import UserForm from "../components/UserForm";
+import userGroupsService from "../../../administration/services/userGroupsService";
+import positionsService from "../../../administration/services/positionsService";
+import departmentsService from "../../../administration/services/departmentsService";
+import nrcService from "../../../administration/services/nrcService";
 
 import {
   showSuccessToast,
@@ -30,11 +34,16 @@ const UsersList = () => {
   const dispatch = useDispatch();
 
   // Redux state
-  const {
-    users,
-    isLoading,
-    isSubmitting,
-  } = useSelector((state) => state.users);
+  const { users = [], isLoading } = useSelector((state) => state.users);
+  const [userGroups, setUserGroups] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [nrcStates, setNrcStates] = useState([]);
+  const [nrcTownships, setNrcTownships] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+  const [positionsLoading, setPositionsLoading] = useState(true);
+  const [departmentsLoading, setDepartmentsLoading] = useState(true);
+  const [nrcLoading, setNrcLoading] = useState(true);
 
   // Local state
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -60,6 +69,124 @@ const UsersList = () => {
     fetchUsers();
   }, [fetchUsers]);
 
+  useEffect(() => {
+    let active = true;
+    userGroupsService
+      .getUserGroups()
+      .then((response) => {
+        const payload = response?.data ?? response;
+        const groups = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+        if (active) setUserGroups(groups);
+      })
+      .catch((error) => {
+        showErrorToast(
+          error.response?.data?.message ||
+            error.message ||
+            "Failed to fetch user groups."
+        );
+      })
+      .finally(() => {
+        if (active) setGroupsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([nrcService.getStates(), nrcService.getTownships()])
+      .then(([statesResponse, townshipsResponse]) => {
+        const getItems = (response) => {
+          const payload = response?.data ?? response;
+          if (Array.isArray(payload)) return payload;
+          if (Array.isArray(payload?.data)) return payload.data;
+          return [];
+        };
+        if (active) {
+          setNrcStates(getItems(statesResponse));
+          setNrcTownships(getItems(townshipsResponse));
+        }
+      })
+      .catch((error) => {
+        showErrorToast(
+          error.response?.data?.message ||
+            error.message ||
+            "Failed to fetch NRC states and townships."
+        );
+      })
+      .finally(() => {
+        if (active) setNrcLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    departmentsService
+      .getDepartments()
+      .then((response) => {
+        const payload = response?.data ?? response;
+        const items = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+        if (active) setDepartments(items);
+      })
+      .catch((error) => {
+        showErrorToast(
+          error.response?.data?.message ||
+            error.message ||
+            "Failed to fetch departments."
+        );
+      })
+      .finally(() => {
+        if (active) setDepartmentsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    positionsService
+      .getPositions()
+      .then((response) => {
+        const payload = response?.data ?? response;
+        const items = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+        if (active) setPositions(items);
+      })
+      .catch((error) => {
+        showErrorToast(
+          error.response?.data?.message ||
+            error.message ||
+            "Failed to fetch positions."
+        );
+      })
+      .finally(() => {
+        if (active) setPositionsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // Table columns
   const columns = useMemo(
     () => [
@@ -69,12 +196,23 @@ const UsersList = () => {
         size: 200,
       },
       {
-        accessorKey: "office_email",
-        header: "Email",
+        accessorKey: "personal_email",
+        header: "Personal Email",
         size: 250,
       },
       {
-        accessorKey: "phone",
+        accessorKey: "office_email",
+        header: "Office Email",
+        size: 250,
+      },
+      {
+        accessorFn: (row) => row.role?.name || row.role_name || "",
+        id: "role",
+        header: "User Group",
+        size: 180,
+      },
+      {
+        accessorKey: "personal_phone",
         header: "Phone",
         size: 150,
       },
@@ -111,20 +249,12 @@ const UsersList = () => {
       let result;
 
       if (editData) {
-        result = await dispatch(
-          updateUser({
-            id: editData.id,
-            data,
-          })
-        );
-      } else {
-        result = await dispatch(createUser({
-          ...data,
-          role_id: 1,
-          position_id: 1,
-          department_id: 1,
-          personal_email: "admin@mail.com"	
+        result = await dispatch(updateUser({
+          id: editData.uuid || editData.id,
+          data,
         }));
+      } else {
+        result = await dispatch(createUser(data));
       }
 
       if (
@@ -147,7 +277,7 @@ const UsersList = () => {
         );
       }
     } catch (error) {
-      showErrorToast("Something went wrong.");
+      showErrorToast(error.message || "Unable to save user.");
     }
   };
 
@@ -157,7 +287,7 @@ const UsersList = () => {
 
     try {
       const result = await dispatch(
-        deleteUser(deleteData.id)
+        deleteUser(deleteData.uuid || deleteData.id)
       );
 
       if (deleteUser.fulfilled.match(result)) {
@@ -173,7 +303,7 @@ const UsersList = () => {
         );
       }
     } catch (error) {
-      showErrorToast("Something went wrong while deleting user.");
+      showErrorToast(error.message || "Unable to delete user.");
     }
   };
 
@@ -224,21 +354,34 @@ const UsersList = () => {
         }}
         onSubmit={handleSubmit}
         editData={editData}
-        isLoading={isSubmitting}
+        isLoading={
+          isLoading ||
+          groupsLoading ||
+          positionsLoading ||
+          departmentsLoading ||
+          nrcLoading
+        }
+        userGroups={userGroups}
+        positions={positions}
+        departments={departments}
+        positionsLoading={positionsLoading}
+        departmentsLoading={departmentsLoading}
+        nrcStates={nrcStates}
+        nrcTownships={nrcTownships}
+        nrcLoading={nrcLoading}
       />
 
       {/* Delete Confirmation */}
       <DeleteConfirmationModal
-        open={deleteModalOpen}
+        isOpen={deleteModalOpen}
         onClose={() => {
           setDeleteModalOpen(false);
           setDeleteData(null);
         }}
-        onConfirm={handleDeleteConfirmed}
+        onDelete={handleDeleteConfirmed}
         message={`Are you sure you want to delete ${
-          deleteData?.name || "this user"
+          deleteData?.user_name || "this user"
         }?`}
-        isLoading={isSubmitting}
       />
 
     </Box>

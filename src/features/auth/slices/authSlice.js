@@ -1,9 +1,27 @@
 import { createSlice } from "@reduxjs/toolkit";
+import Cookies from "js-cookie";
+
+const getStoredUser = () => {
+  try {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  } catch {
+    localStorage.removeItem("user");
+    return null;
+  }
+};
+
+const storedUser = getStoredUser();
+const hasToken = Boolean(Cookies.get("jwt_authorization"));
 
 const initialState = {
-  user: null,
-  isAuthenticated: false,
+  user: hasToken ? storedUser : null,
+  isAuthenticated: Boolean(storedUser && hasToken),
 };
+
+if (!hasToken && storedUser) {
+  localStorage.removeItem("user");
+}
 
 const authSlice = createSlice({
   name: "auth",
@@ -13,11 +31,13 @@ const authSlice = createSlice({
     setCredentials(state, action) {
       state.user = action.payload;
       state.isAuthenticated = true;
+      localStorage.setItem("user", JSON.stringify(action.payload));
     },
 
     clearCredentials(state) {
       state.user = null;
       state.isAuthenticated = false;
+      localStorage.removeItem("user");
     },
   },
 });

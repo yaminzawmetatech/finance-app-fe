@@ -24,6 +24,11 @@ import CollectionDashboard from
 import FinanceDashboard from
   "../features/finance/pages/FinanceDashboard";
 import UsersList from "../features/core/users/pages/UsersList";
+import RolesPage from "../features/administration/pages/RolesPage";
+import PositionsPage from "../features/administration/pages/PositionsPage";
+import NrcStatePage from "../features/administration/pages/NrcStatePage";
+import NrcTownshipPage from "../features/administration/pages/NrcTownshipPage";
+import DepartmentsPage from "../features/administration/pages/DepartmentsPage";
 
 function RequireAuth() {
   const isAuthenticated = useSelector(
@@ -75,6 +80,26 @@ export const router = createBrowserRouter([
               {
                 path: "/administration/users",
                 element: <UsersList />,
+              },
+              {
+                path: "/administration/roles",
+                element: <RolesPage />,
+              },
+              {
+                path: "/administration/positions",
+                element: <PositionsPage />,
+              },
+              {
+                path: "/administration/departments",
+                element: <DepartmentsPage />,
+              },
+              {
+                path: "/administration/nrc-states",
+                element: <NrcStatePage />,
+              },
+              {
+                path: "/administration/nrc-townships",
+                element: <NrcTownshipPage />,
               },
             ],
           },

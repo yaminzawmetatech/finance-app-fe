@@ -1,9 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const getStoredContext = () => {
+  try {
+    const stored = localStorage.getItem("company_context");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    localStorage.removeItem("company_context");
+    return null;
+  }
+};
+
+const storedContext = getStoredContext();
+
 const initialState = {
-  activeCompany: null,
-  activeModules: [],
-  subscriptionLoaded: false,
+  activeCompany: storedContext?.activeCompany ?? null,
+  activeModules: storedContext?.activeModules ?? [],
+  subscriptionLoaded: Boolean(storedContext),
 };
 
 const companySlice = createSlice({
@@ -17,12 +29,17 @@ const companySlice = createSlice({
       state.activeCompany = company;
       state.activeModules = modules;
       state.subscriptionLoaded = true;
+      localStorage.setItem(
+        "company_context",
+        JSON.stringify({ activeCompany: company, activeModules: modules })
+      );
     },
 
     clearCompanyContext(state) {
       state.activeCompany = null;
       state.activeModules = [];
       state.subscriptionLoaded = false;
+      localStorage.removeItem("company_context");
     },
   },
 });

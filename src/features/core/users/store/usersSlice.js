@@ -1,6 +1,29 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import usersService from "../services/usersService";
 // import Cookies from "js-cookie";
+
+const getCollection = (response) => {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  return [];
+};
+
+const getSaveErrorMessage = (error) => {
+  const message = error.response?.data?.message ?? error.message;
+  if (typeof message === "string") return message;
+  if (message && typeof message === "object") {
+    return Object.entries(message)
+      .flatMap(([field, errors]) =>
+        (Array.isArray(errors) ? errors : [errors]).map(
+          (item) => `${field}: ${item}`
+        )
+      )
+      .join("\n");
+  }
+  return error.toString();
+};
+
 const initialState = {
   users: [],
   isError: false,
@@ -20,13 +43,7 @@ export const createUser = createAsyncThunk(
     try {
       return await usersService.createUser(userData);
     } catch (error) {
-      const message =
-        (error.response &&
-          error.response.data &&
-          error.response.data.message) ||
-        error.message ||
-        error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(getSaveErrorMessage(error));
     }
   }
 );
@@ -125,18 +142,12 @@ export const deleteUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   "users/update",
-  async ({ id, newData }, thunkAPI) => {
+  async ({ id, data }, thunkAPI) => {
     try {
-      return await usersService.updateUser(id, newData);
+      return await usersService.updateUser(id, data);
     } catch (error) {
       console.log(error);
-      const message =
-        (error.response &&
-          error.response.data &&
-          error.response.data.message) ||
-        error.message ||
-        error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(getSaveErrorMessage(error));
     }
   }
 );
@@ -228,7 +239,7 @@ export const userSlice = createSlice({
   name: "users",
   initialState,
   reducers: {
-    reset: (state) => initialState,
+    reset: () => initialState,
   },
   extraReducers: (builder) => {
     builder
@@ -251,7 +262,7 @@ export const userSlice = createSlice({
       .addCase(getUsers.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.users = action.payload.data;
+        state.users = getCollection(action.payload);
       })
       .addCase(getUsers.rejected, (state, action) => {
         state.isLoading = false;
@@ -264,7 +275,7 @@ export const userSlice = createSlice({
       .addCase(getAllUsers.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.users = action.payload.data;
+        state.users = getCollection(action.payload);
       })
       .addCase(getAllUsers.rejected, (state, action) => {
         state.isLoading = false;
@@ -304,7 +315,10 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.users = state.users.filter(
-          (user) => user._id !== action.payload.id
+          (user) =>
+            user.uuid !== action.meta.arg &&
+            user.id !== action.meta.arg &&
+            user._id !== action.meta.arg
         );
       })
       .addCase(deleteUser.rejected, (state, action) => {
@@ -318,10 +332,8 @@ export const userSlice = createSlice({
       .addCase(updateUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.users = action.payload.data;
-        // state.users = state.users.filter(
-        //   (department) => department._id !== action.payload.id
-        // )
+        const users = getCollection(action.payload);
+        if (users.length) state.users = users;
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.isLoading = false;

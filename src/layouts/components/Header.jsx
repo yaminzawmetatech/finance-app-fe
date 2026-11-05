@@ -4,8 +4,29 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import authService from "../../features/auth/services/authService";
+import { clearCredentials } from "../../features/auth/slices/authSlice";
+import { clearCompanyContext } from "../../features/subscriptions/slices/companySlice";
+import { showErrorToast } from "../../components/common/ToastMessage";
 
 export default function Header() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      showErrorToast(error.message || "Unable to contact the server to log out.");
+    } finally {
+      dispatch(clearCredentials());
+      dispatch(clearCompanyContext());
+      navigate("/login", { replace: true });
+    }
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -63,7 +84,19 @@ export default function Header() {
             gap: 2,
           }}
         >
-          {/* Add notifications, profile and logout here */}
+          <Typography
+            component="button"
+            onClick={handleLogout}
+            sx={{
+              border: 0,
+              background: "transparent",
+              color: "#C94A1A",
+              font: "inherit",
+              cursor: "pointer",
+            }}
+          >
+            Sign out
+          </Typography>
         </Box>
       </Toolbar>
     </AppBar>

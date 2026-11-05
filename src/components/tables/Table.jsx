@@ -16,8 +16,10 @@ const Table = ({
   onEdit,
   onDelete,
   createButtonLabel = "Create New",
+  enableCreateButton = true,
   enableRowActions = true,
   initialState = {},
+  state: controlledState = {},
   ...tableProps
 }) => {
   const tableInitialState = useMemo(
@@ -37,6 +39,7 @@ const Table = ({
         initialState={tableInitialState}
         state={{
           isLoading,
+          ...controlledState,
         }}
         enableStickyHeader
         enableColumnOrdering
@@ -79,15 +82,17 @@ const Table = ({
               ]
             : []),
         ]}
-        renderTopToolbarCustomActions={() => (
-          <Button
-            variant="contained"
-            onClick={onCreate}
-            disabled={!onCreate}
-          >
-            {createButtonLabel}
-          </Button>
-        )}
+        renderTopToolbarCustomActions={() =>
+          enableCreateButton ? (
+            <Button
+              variant="contained"
+              onClick={onCreate}
+              disabled={!onCreate}
+            >
+              {createButtonLabel}
+            </Button>
+          ) : null
+        }
         {...tableProps}
       />
     </Box>
