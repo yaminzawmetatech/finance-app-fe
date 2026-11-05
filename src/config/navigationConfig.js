@@ -147,6 +147,13 @@ export const NAVIGATION_CONFIG = [
         module: "administration",
       },
       {
+        id: "tables",
+        label: "Table Management",
+        path: "/administration/tables",
+        icon: "ClipboardList",
+        module: "administration",
+      },
+      {
         id: "nrc-states",
         label: "NRC State Management",
         path: "/administration/nrc-states",

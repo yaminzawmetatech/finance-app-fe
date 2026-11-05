@@ -36,6 +36,7 @@ import AddressCitiesPage from "../features/core/address-cities/pages/AddressCiti
 import AddressWardsPage from "../features/core/address-wards/pages/AddressWardsPage";
 import AddressVillagesPage from "../features/core/address-villages/pages/AddressVillagesPage";
 import AddressVillageTractsPage from "../features/core/address-village-tracts/pages/AddressVillageTractsPage";
+import TablesPage from "../features/core/tables/pages/TablesPage";
 
 function RequireAuth() {
   const isAuthenticated = useSelector(
@@ -99,6 +100,10 @@ export const router = createBrowserRouter([
               {
                 path: "/administration/departments",
                 element: <DepartmentsPage />,
+              },
+              {
+                path: "/administration/tables",
+                element: <TablesPage />,
               },
               {
                 path: "/administration/nrc-states",
