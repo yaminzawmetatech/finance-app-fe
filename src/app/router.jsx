@@ -29,6 +29,13 @@ import PositionsPage from "../features/core/positions/pages/PositionsPage";
 import NrcStatePage from "../features/core/nrc-states/pages/NrcStatePage";
 import NrcTownshipPage from "../features/core/nrc-townships/pages/NrcTownshipPage";
 import DepartmentsPage from "../features/core/departments/pages/DepartmentsPage";
+import AddressStatesPage from "../features/core/address-states/pages/AddressStatesPage";
+import AddressDistrictsPage from "../features/core/address-districts/pages/AddressDistrictsPage";
+import AddressTownshipsPage from "../features/core/address-townships/pages/AddressTownshipsPage";
+import AddressCitiesPage from "../features/core/address-cities/pages/AddressCitiesPage";
+import AddressWardsPage from "../features/core/address-wards/pages/AddressWardsPage";
+import AddressVillagesPage from "../features/core/address-villages/pages/AddressVillagesPage";
+import AddressVillageTractsPage from "../features/core/address-village-tracts/pages/AddressVillageTractsPage";
 
 function RequireAuth() {
   const isAuthenticated = useSelector(
@@ -100,6 +107,34 @@ export const router = createBrowserRouter([
               {
                 path: "/administration/nrc-townships",
                 element: <NrcTownshipPage />,
+              },
+              {
+                path: "/administration/address-states",
+                element: <AddressStatesPage />,
+              },
+              {
+                path: "/administration/address-districts",
+                element: <AddressDistrictsPage />,
+              },
+              {
+                path: "/administration/address-townships",
+                element: <AddressTownshipsPage />,
+              },
+              {
+                path: "/administration/address-cities",
+                element: <AddressCitiesPage />,
+              },
+              {
+                path: "/administration/address-wards",
+                element: <AddressWardsPage />,
+              },
+              {
+                path: "/administration/address-villages",
+                element: <AddressVillagesPage />,
+              },
+              {
+                path: "/administration/address-village-tracts",
+                element: <AddressVillageTractsPage />,
               },
             ],
           },
