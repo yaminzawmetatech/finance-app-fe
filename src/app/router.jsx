@@ -1,3 +1,121 @@
+// import {
+//   createBrowserRouter,
+//   Navigate,
+//   Outlet,
+// } from "react-router-dom";
+
+// import { useSelector } from "react-redux";
+
+// import LoginPage from "../features/auth/pages/LoginPage";
+// import MainLayout from "../layouts/MainLayout";
+
+// import CoreRoutes from "../features/core/coreRoutes";
+// import { CreditManagementRoutes } from "../features/credit-management";
+
+// import LoanDashboard from "../features/loan-management/pages/LoanDashboard";
+// import CollectionDashboard from "../features/collection/pages/CollectionDashboard";
+// import FinanceDashboard from "../features/finance/pages/FinanceDashboard";
+
+// // Protect routes that require authentication
+// function RequireAuth() {
+//   const isAuthenticated = useSelector(
+//     (state) => state.auth.isAuthenticated
+//   );
+
+//   return isAuthenticated
+//     ? <Outlet />
+//     : <Navigate to="/login" replace />;
+// }
+
+// // Redirect authenticated users away from login
+// function LoginRoute() {
+//   const isAuthenticated = useSelector(
+//     (state) => state.auth.isAuthenticated
+//   );
+
+//   return isAuthenticated
+//     ? <Navigate to="/" replace />
+//     : <LoginPage />;
+// }
+
+// export const router = createBrowserRouter([
+//   // Public routes
+//   {
+//     path: "/login",
+//     element: <LoginRoute />,
+//   },
+
+//   // Protected routes
+//   {
+//     element: <RequireAuth />,
+//     children: [
+//       {
+//         path: "/",
+//         element: <MainLayout />,
+//         children: [
+//           // Default dashboard redirect
+//           {
+//             index: true,
+//             element: <Navigate to="/administration" replace />,
+//           },
+
+//           // Administration
+//           {
+//             path: "administration/*",
+//             element: <CoreRoutes />,
+//           },
+
+//           // Credit Management
+//           {
+//             path: "credit-management/*",
+//             element: <CreditManagementRoutes />,
+//           },
+
+//           // Loan Management
+//           {
+//             path: "loan-management",
+//             element: <LoanDashboard />,
+//           },
+
+//           // Collection
+//           {
+//             path: "collection",
+//             element: <CollectionDashboard />,
+//           },
+
+//           // Finance
+//           {
+//             path: "finance",
+//             element: <FinanceDashboard />,
+//           },
+
+//           // Module unavailable page (optional)
+//           {
+//             path: "module-unavailable",
+//             element: (
+//               <div style={{ padding: "24px" }}>
+//                 <h2>Module Not Available</h2>
+//                 <p>
+//                   This module is currently unavailable.
+//                   Please contact your administrator.
+//                 </p>
+//               </div>
+//             ),
+//           },
+//         ],
+//       },
+//     ],
+//   },
+
+//   // Unknown routes
+//   {
+//     path: "*",
+//     element: <Navigate to="/" replace />,
+//   },
+// ]);
+
+
+
 import {
   createBrowserRouter,
   Navigate,
@@ -8,36 +126,11 @@ import { useSelector } from "react-redux";
 
 import LoginPage from "../features/auth/pages/LoginPage";
 import MainLayout from "../layouts/MainLayout";
-import ModuleRoute from "../components/common/ModuleRoute";
 
-import AdministrationDashboard from
-  "../features/administration/pages/AdministrationDashboard";
+// Generated customer-specific routes
+import { moduleRoutes } from "../features/generated/moduleRoutes";
 
-import { CreditManagementRoutes } from "../features/credit-management";
-
-import LoanDashboard from
-  "../features/loan-management/pages/LoanDashboard";
-
-import CollectionDashboard from
-  "../features/collection/pages/CollectionDashboard";
-
-import FinanceDashboard from
-  "../features/finance/pages/FinanceDashboard";
-import UsersList from "../features/core/users/pages/UsersList";
-import RolesPage from "../features/core/roles/pages/RolesPage";
-import PositionsPage from "../features/core/positions/pages/PositionsPage";
-import NrcStatePage from "../features/core/nrc-states/pages/NrcStatePage";
-import NrcTownshipPage from "../features/core/nrc-townships/pages/NrcTownshipPage";
-import DepartmentsPage from "../features/core/departments/pages/DepartmentsPage";
-import AddressStatesPage from "../features/core/address-states/pages/AddressStatesPage";
-import AddressDistrictsPage from "../features/core/address-districts/pages/AddressDistrictsPage";
-import AddressTownshipsPage from "../features/core/address-townships/pages/AddressTownshipsPage";
-import AddressCitiesPage from "../features/core/address-cities/pages/AddressCitiesPage";
-import AddressWardsPage from "../features/core/address-wards/pages/AddressWardsPage";
-import AddressVillagesPage from "../features/core/address-villages/pages/AddressVillagesPage";
-import AddressVillageTractsPage from "../features/core/address-village-tracts/pages/AddressVillageTractsPage";
-import TablesPage from "../features/core/tables/pages/TablesPage";
-
+// Protect authenticated routes
 function RequireAuth() {
   const isAuthenticated = useSelector(
     (state) => state.auth.isAuthenticated
@@ -48,6 +141,7 @@ function RequireAuth() {
     : <Navigate to="/login" replace />;
 }
 
+// Redirect authenticated users from login
 function LoginRoute() {
   const isAuthenticated = useSelector(
     (state) => state.auth.isAuthenticated
@@ -73,132 +167,29 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="/administration" replace />,
-          },
-
-          {
             element: (
-              <ModuleRoute module="administration" />
+              <Navigate
+                to="/administration"
+                replace
+              />
             ),
-            children: [
-              {
-                path: "administration",
-                element: <AdministrationDashboard />,
-              },
-              {
-                path: "/administration/users",
-                element: <UsersList />,
-              },
-              {
-                path: "/administration/roles",
-                element: <RolesPage />,
-              },
-              {
-                path: "/administration/positions",
-                element: <PositionsPage />,
-              },
-              {
-                path: "/administration/departments",
-                element: <DepartmentsPage />,
-              },
-              {
-                path: "/administration/tables",
-                element: <TablesPage />,
-              },
-              {
-                path: "/administration/nrc-states",
-                element: <NrcStatePage />,
-              },
-              {
-                path: "/administration/nrc-townships",
-                element: <NrcTownshipPage />,
-              },
-              {
-                path: "/administration/address-states",
-                element: <AddressStatesPage />,
-              },
-              {
-                path: "/administration/address-districts",
-                element: <AddressDistrictsPage />,
-              },
-              {
-                path: "/administration/address-townships",
-                element: <AddressTownshipsPage />,
-              },
-              {
-                path: "/administration/address-cities",
-                element: <AddressCitiesPage />,
-              },
-              {
-                path: "/administration/address-wards",
-                element: <AddressWardsPage />,
-              },
-              {
-                path: "/administration/address-villages",
-                element: <AddressVillagesPage />,
-              },
-              {
-                path: "/administration/address-village-tracts",
-                element: <AddressVillageTractsPage />,
-              },
-            ],
           },
 
-          {
-            element: (
-              <ModuleRoute module="credit-management" />
-            ),
-            children: [
-              {
-                path: "credit-management/*",
-                element: <CreditManagementRoutes  />,
-              },
-            ],
-          },
+          // Only generated and included modules
+          ...moduleRoutes.map(({ path, Component }) => ({
+            path,
+            element: <Component />,
+          })),
 
-          {
-            element: (
-              <ModuleRoute module="loan-management" />
-            ),
-            children: [
-              {
-                path: "loan-management",
-                element: <LoanDashboard />,
-              },
-            ],
-          },
-
-          {
-            element: (
-              <ModuleRoute module="collection" />
-            ),
-            children: [
-              {
-                path: "collection",
-                element: <CollectionDashboard />,
-              },
-            ],
-          },
-
-          {
-            element: (
-              <ModuleRoute module="finance" />
-            ),
-            children: [
-              {
-                path: "finance",
-                element: <FinanceDashboard />,
-              },
-            ],
-          },
-
+          // Shared unavailable page
           {
             path: "module-unavailable",
             element: (
-              <div>
+              <div style={{ padding: "24px" }}>
                 <h2>Module Not Available</h2>
                 <p>
-                  Your company has not purchased this module.
+                  This module is currently unavailable.
+                  Please contact your administrator.
                 </p>
               </div>
             ),

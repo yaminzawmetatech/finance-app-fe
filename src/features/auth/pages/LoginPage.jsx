@@ -13,8 +13,6 @@ import {
 
 import authService from "../services/authService";
 import { setCredentials } from "../slices/authSlice";
-import { setCompanyContext } from "../../subscriptions/slices/companySlice";
-import { MODULE_DEFINITIONS } from "../../../config/modules";
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -33,13 +31,6 @@ export default function LoginPage() {
     try {
       const user = await authService.login(email, password);
       dispatch(setCredentials(user));
-
-      dispatch(
-        setCompanyContext({
-          company: null,
-          modules: MODULE_DEFINITIONS.map((module) => module.key),
-        })
-      );
 
       navigate("/", { replace: true });
     } catch (err) {

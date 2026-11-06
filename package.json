@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "build:company-a": "vite build --mode company-a --outDir dist/company-a",
     "build:company-b": "vite build --mode company-b --outDir dist/company-b",
-    "build:company-c": "vite build --mode company-c --outDir dist/company-c"
+    "build:company-c": "vite build --mode company-c --outDir dist/company-c",
+    "package": "node build/packageCustomer.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

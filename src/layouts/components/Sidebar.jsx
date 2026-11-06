@@ -325,7 +325,6 @@ import {
 } from "lucide-react";
 
 import { NavLink, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 
 // import { NAVIGATION_CONFIG } from "../../config/navigationConfig";
 import { NAVIGATION_CONFIG } from "../../config/navigation";
@@ -385,10 +384,6 @@ export default function Sidebar() {
 
   const { permissions } = usePermission();
 
-  const {
-    activeModules = [],
-    subscriptionLoaded,
-  } = useSelector((state) => state.company || {});
 
   const isActive = (path) => {
     if (!path) return false;

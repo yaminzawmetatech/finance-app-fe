@@ -1,7 +1,6 @@
 
-import { CORE_NAVIGATION } from "./coreNavigation";
-import { CREDIT_MANAGEMENT_NAVIGATION } from "./creditManagementNavigation";
-
+import { CREDIT_MANAGEMENT_NAVIGATION } from "../../features/credit-management/creditManagementNavigation";
+import { CORE_NAVIGATION } from "../../features/core/coreNavigation";
 // import { LOAN_MANAGEMENT_NAVIGATION } from "./loanManagementNavigation";
 // import { COLLECTION_NAVIGATION } from "./collectionNavigation";
 // import { FINANCE_NAVIGATION } from "./financeNavigation";

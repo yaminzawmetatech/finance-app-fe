@@ -1,8 +1,12 @@
+
 import { useSelector } from "react-redux";
+
+const EMPTY_PERMISSIONS = [];
 
 export const usePermission = () => {
   const permissions = useSelector(
-    (state) => state.auth.user.permissions || []
+    (state) =>
+      state.auth.user?.permissions ?? EMPTY_PERMISSIONS
   );
 
   const can = (permission) =>

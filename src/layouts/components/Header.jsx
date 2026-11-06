@@ -8,7 +8,6 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import authService from "../../features/auth/services/authService";
 import { clearCredentials } from "../../features/auth/slices/authSlice";
-import { clearCompanyContext } from "../../features/subscriptions/slices/companySlice";
 import { showErrorToast } from "../../components/common/ToastMessage";
 
 export default function Header() {
