@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Alert,
   Box,
@@ -13,17 +14,18 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "../../../../components/common/ToastMessage";
-import nrcStatesService from "../../nrc-states/services/nrcStatesService";
-import nrcTownshipsService from "../services/nrcTownshipsService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  return [];
-};
+import { fetchNrcStates } from "../../nrc-states/store/nrcStatesSlice";
+import {
+  batchDeleteNrcTownships,
+  createNrcTownship,
+  deleteNrcTownship,
+  fetchNrcTownships,
+  importNrcTownships,
+  updateNrcTownship,
+} from "../store/nrcTownshipsSlice";
 
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") {
@@ -39,39 +41,38 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function NrcTownshipPage() {
-  const [townships, setTownships] = useState([]);
-  const [states, setStates] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    items: townships,
+    isLoading,
+    isSaving,
+    isImporting,
+  } = useSelector((state) => state.nrcTownships);
+  const states = useSelector((state) => state.nrcStates.items);
   const [formOpen, setFormOpen] = useState(false);
   const [editTownship, setEditTownship] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [rowSelection, setRowSelection] = useState({});
-  const [isImporting, setIsImporting] = useState(false);
   const importInputRef = useRef(null);
   const [loadError, setLoadError] = useState("");
   const loadTownships = useCallback(async () => {
     try {
-      const response = await nrcTownshipsService.getTownships();
-      setTownships(getItems(response));
+      await dispatch(fetchNrcTownships()).unwrap();
       setLoadError("");
     } catch (error) {
       const message = getErrorMessage(error, "Unable to load NRC townships.");
       setLoadError(message);
       showErrorToast(message);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   const loadStates = useCallback(async () => {
     try {
-      const response = await nrcStatesService.getStates();
-      setStates(getItems(response));
+      await dispatch(fetchNrcStates()).unwrap();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to load NRC states."));
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     loadTownships();
@@ -102,7 +103,6 @@ export default function NrcTownshipPage() {
   };
 
   const handleSave = async (values) => {
-    setIsSaving(true);
     const payload = {
       ...values,
       name: values.name.trim(),
@@ -113,12 +113,12 @@ export default function NrcTownshipPage() {
 
     try {
       if (editTownship) {
-        await nrcTownshipsService.updateTownship(
-          editTownship.uuid || editTownship.id,
-          payload
-        );
+        await dispatch(updateNrcTownship({
+          uuid: editTownship.uuid || editTownship.id,
+          data: payload,
+        })).unwrap();
       } else {
-        await nrcTownshipsService.createTownship(payload);
+        await dispatch(createNrcTownship(payload)).unwrap();
       }
       showSuccessToast(
         `NRC Township ${editTownship ? "updated" : "created"}.`
@@ -128,23 +128,22 @@ export default function NrcTownshipPage() {
       await loadTownships();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to save NRC township."));
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleteConfirmation) return;
-    setIsSaving(true);
     try {
       if (deleteConfirmation.type === "batch") {
-        await nrcTownshipsService.batchDeleteTownships(deleteConfirmation.uuids);
+        await dispatch(
+          batchDeleteNrcTownships(deleteConfirmation.uuids)
+        ).unwrap();
         showSuccessToast("Selected NRC townships deleted.");
       } else {
-        await nrcTownshipsService.deleteTownship(
+        await dispatch(deleteNrcTownship(
           deleteConfirmation.township.uuid ||
             deleteConfirmation.township.id
-        );
+        )).unwrap();
         showSuccessToast("NRC Township deleted.");
       }
       setDeleteConfirmation(null);
@@ -154,8 +153,6 @@ export default function NrcTownshipPage() {
       showErrorToast(
         getErrorMessage(error, "Unable to delete selected NRC townships.")
       );
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -164,9 +161,8 @@ export default function NrcTownshipPage() {
     event.target.value = "";
     if (!file) return;
 
-    setIsImporting(true);
     try {
-      const response = await nrcTownshipsService.importTownships(file);
+      const response = await dispatch(importNrcTownships(file)).unwrap();
       const payload = response?.data ?? response;
       const rowCount = payload?.rowCount;
       setRowSelection({});
@@ -178,8 +174,6 @@ export default function NrcTownshipPage() {
       await loadTownships();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to import NRC townships."));
-    } finally {
-      setIsImporting(false);
     }
   };
 

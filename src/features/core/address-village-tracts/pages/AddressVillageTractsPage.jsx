@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
 import { showErrorToast, showSuccessToast } from "../../../../components/common/ToastMessage";
 import AddressVillageTractForm from "../components/AddressVillageTractForm";
-import addressVillageTractsService from "../services/addressVillageTractsService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  return Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : [];
-};
+import {
+  createAddressVillageTract,
+  deleteAddressVillageTract,
+  fetchAddressVillageTracts,
+  importAddressVillageTracts,
+  updateAddressVillageTract,
+} from "../store/addressVillageTractsSlice";
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") return Object.entries(message).flatMap(([field, errors]) => (Array.isArray(errors) ? errors : [errors]).map((item) => `${field}: ${item}`)).join("\n");
@@ -18,20 +21,22 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function AddressVillageTractsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    items,
+    isLoading: loading,
+    isSaving: saving,
+    isImporting: importing,
+  } = useSelector((state) => state.addressVillageTracts);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [deleteData, setDeleteData] = useState(null);
   const [loadError, setLoadError] = useState("");
   const importRef = useRef(null);
   const loadData = useCallback(async () => {
-    try { setItems(getItems(await addressVillageTractsService.getAll())); setLoadError(""); }
+    try { await dispatch(fetchAddressVillageTracts()).unwrap(); setLoadError(""); }
     catch (error) { const message = getErrorMessage(error, "Unable to load address village tracts."); setLoadError(message); showErrorToast(message); }
-    finally { setLoading(false); }
-  }, []);
+  }, [dispatch]);
   useEffect(() => { loadData(); }, [loadData]);
   const columns = useMemo(() => [
     { accessorKey: "vt_pcode", header: "Village Tract P-Code", size: 190 },
@@ -43,35 +48,37 @@ export default function AddressVillageTractsPage() {
     { accessorKey: "created_by", header: "Created By", size: 160 },
   ], []);
   const save = async (values) => {
-    setSaving(true);
     try {
-      if (editData) await addressVillageTractsService.update(editData.uuid || editData.id, values);
-      else await addressVillageTractsService.create(values);
+      if (editData) {
+        await dispatch(updateAddressVillageTract({
+          uuid: editData.uuid || editData.id,
+          data: values,
+        })).unwrap();
+      } else {
+        await dispatch(createAddressVillageTract(values)).unwrap();
+      }
       showSuccessToast(`Address Village Tract ${editData ? "updated" : "created"}.`);
       setOpen(false); setEditData(null); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to save address village tract.")); }
-    finally { setSaving(false); }
   };
   const remove = async () => {
     if (!deleteData) return;
-    setSaving(true);
     try {
-      await addressVillageTractsService.delete(deleteData.uuid || deleteData.id);
+      await dispatch(
+        deleteAddressVillageTract(deleteData.uuid || deleteData.id)
+      ).unwrap();
       showSuccessToast("Address Village Tract deleted.");
       setDeleteData(null); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to delete address village tract.")); }
-    finally { setSaving(false); }
   };
   const importFile = async (event) => {
     const file = event.target.files?.[0]; event.target.value = "";
     if (!file) return;
-    setImporting(true);
     try {
-      const result = await addressVillageTractsService.importFile(file); const payload = result?.data ?? result;
+      const result = await dispatch(importAddressVillageTracts(file)).unwrap(); const payload = result?.data ?? result;
       showSuccessToast(Number.isFinite(payload?.rowCount) ? `Imported ${payload.rowCount} address village tract(s).` : "Address village tracts imported.");
       await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to import address village tracts.")); }
-    finally { setImporting(false); }
   };
   return (
     <Box sx={{ width: "100%" }}>

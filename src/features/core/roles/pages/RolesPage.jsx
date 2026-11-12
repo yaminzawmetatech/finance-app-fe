@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Alert,
   Box,
@@ -12,14 +13,13 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "../../../../components/common/ToastMessage";
-import userGroupsService from "../services/rolesService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  return [];
-};
+import {
+  createRole,
+  deleteRole,
+  fetchRolePermissions,
+  fetchRoles,
+  updateRole,
+} from "../store/rolesSlice";
 
 const getPermissionNames = (permissions = []) =>
   permissions.map((permission) =>
@@ -27,10 +27,15 @@ const getPermissionNames = (permissions = []) =>
   );
 
 export default function RolesPage() {
-  const [groups, setGroups] = useState([]);
-  const [permissions, setPermissions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    items: groups,
+    permissions,
+    isLoading: isRolesLoading,
+    isLoadingPermissions,
+    isSaving,
+  } = useSelector((state) => state.roles);
+  const isLoading = isRolesLoading || isLoadingPermissions;
   const [formOpen, setFormOpen] = useState(false);
   const [editGroup, setEditGroup] = useState(null);
   const [deleteGroup, setDeleteGroup] = useState(null);
@@ -38,22 +43,19 @@ export default function RolesPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [groupResponse, permissionResponse] = await Promise.all([
-        userGroupsService.getUserGroups(),
-        userGroupsService.getPermissions(),
+      await Promise.all([
+        dispatch(fetchRoles()).unwrap(),
+        dispatch(fetchRolePermissions()).unwrap(),
       ]);
       setLoadError("");
-      setGroups(getItems(groupResponse));
-      setPermissions(getItems(permissionResponse));
     } catch (error) {
-      const message =
-        error.response?.data?.message || error.message || "Unable to load groups.";
+      const message = typeof error === "string"
+        ? error
+        : error.response?.data?.message || error.message || "Unable to load groups.";
       setLoadError(message);
       showErrorToast(message);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     loadData();
@@ -83,7 +85,6 @@ export default function RolesPage() {
     description,
     permissions: selectedPermissions,
   }) => {
-    setIsSaving(true);
     try {
       const payload = {
         name: name.trim(),
@@ -91,12 +92,12 @@ export default function RolesPage() {
         permissions: selectedPermissions,
       };
       if (editGroup) {
-        await userGroupsService.updateUserGroup(
-          editGroup.uuid || editGroup.id,
-          payload
-        );
+        await dispatch(updateRole({
+          uuid: editGroup.uuid || editGroup.id,
+          data: payload,
+        })).unwrap();
       } else {
-        await userGroupsService.createUserGroup(payload);
+        await dispatch(createRole(payload)).unwrap();
       }
       showSuccessToast(
         editGroup ? "User group updated." : "User group created."
@@ -106,29 +107,28 @@ export default function RolesPage() {
       await loadData();
     } catch (error) {
       showErrorToast(
-        error.response?.data?.message || error.message || "Unable to save group."
+        typeof error === "string"
+          ? error
+          : error.response?.data?.message || error.message || "Unable to save group."
       );
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleteGroup) return;
-    setIsSaving(true);
     try {
-      await userGroupsService.deleteUserGroup(
-        deleteGroup.uuid || deleteGroup.id
-      );
+      await dispatch(
+        deleteRole(deleteGroup.uuid || deleteGroup.id)
+      ).unwrap();
       showSuccessToast("User group deleted.");
       setDeleteGroup(null);
       await loadData();
     } catch (error) {
       showErrorToast(
-        error.response?.data?.message || error.message || "Unable to delete group."
+        typeof error === "string"
+          ? error
+          : error.response?.data?.message || error.message || "Unable to delete group."
       );
-    } finally {
-      setIsSaving(false);
     }
   };
 

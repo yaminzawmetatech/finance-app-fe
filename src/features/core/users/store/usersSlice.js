@@ -33,7 +33,7 @@ const initialState = {
   user: [],
   cmcoUsers: [],
   CMCO: [],
-  agents: []
+  agents: [],
 };
 
 // Create new user

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Alert,
   Box,
@@ -12,41 +13,38 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "../../../../components/common/ToastMessage";
-import positionsService from "../services/positionsService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  return [];
-};
+import {
+  createPosition,
+  deletePosition as deletePositionThunk,
+  fetchPositions,
+  updatePosition,
+} from "../store/positionsSlice";
 
 export default function PositionsPage() {
-  const [positions, setPositions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const dispatch = useDispatch();
+  const { items: positions, isLoading, isSaving } = useSelector(
+    (state) => state.positions
+  );
   const [formOpen, setFormOpen] = useState(false);
   const [editPosition, setEditPosition] = useState(null);
   const [deletePosition, setDeletePosition] = useState(null);
   const [loadError, setLoadError] = useState("");
   const loadPositions = useCallback(async () => {
     try {
-      const response = await positionsService.getPositions();
-      setPositions(getItems(response));
+      await dispatch(fetchPositions()).unwrap();
       setLoadError("");
     } catch (error) {
-      const message =
-        error.response?.data?.message || error.message || "Unable to load positions.";
+      const message = typeof error === "string"
+        ? error
+        : error.response?.data?.message || error.message || "Unable to load positions.";
       setLoadError(
         typeof message === "string" ? message : "Unable to load positions."
       );
       showErrorToast(
         typeof message === "string" ? message : "Unable to load positions."
       );
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     loadPositions();
@@ -67,16 +65,15 @@ export default function PositionsPage() {
   };
 
   const handleSave = async ({ name, description }) => {
-    setIsSaving(true);
     try {
       const payload = { name: name.trim(), description: description.trim() };
       if (editPosition) {
-        await positionsService.updatePosition(
-          editPosition.uuid || editPosition.id,
-          payload
-        );
+        await dispatch(updatePosition({
+          uuid: editPosition.uuid || editPosition.id,
+          data: payload,
+        })).unwrap();
       } else {
-        await positionsService.createPosition(payload);
+        await dispatch(createPosition(payload)).unwrap();
       }
       showSuccessToast(
         editPosition ? "Position updated." : "Position created."
@@ -86,33 +83,28 @@ export default function PositionsPage() {
       await loadPositions();
     } catch (error) {
       showErrorToast(
-        error.response?.data?.message ||
-          error.message ||
-          "Unable to save position."
+        typeof error === "string"
+          ? error
+          : error.response?.data?.message || error.message || "Unable to save position."
       );
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deletePosition) return;
-    setIsSaving(true);
     try {
-      await positionsService.deletePosition(
-        deletePosition.uuid || deletePosition.id
-      );
+      await dispatch(
+        deletePositionThunk(deletePosition.uuid || deletePosition.id)
+      ).unwrap();
       showSuccessToast("Position deleted.");
       setDeletePosition(null);
       await loadPositions();
     } catch (error) {
       showErrorToast(
-        error.response?.data?.message ||
-          error.message ||
-          "Unable to delete position."
+        typeof error === "string"
+          ? error
+          : error.response?.data?.message || error.message || "Unable to delete position."
       );
-    } finally {
-      setIsSaving(false);
     }
   };
 

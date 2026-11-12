@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
 import { showErrorToast, showSuccessToast } from "../../../../components/common/ToastMessage";
 import AddressVillageForm from "../components/AddressVillageForm";
-import addressVillagesService from "../services/addressVillagesService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  return Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : [];
-};
+import {
+  createAddressVillage,
+  deleteAddressVillage,
+  fetchAddressVillages,
+  importAddressVillages,
+  updateAddressVillage,
+} from "../store/addressVillagesSlice";
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") return Object.entries(message).flatMap(([field, errors]) => (Array.isArray(errors) ? errors : [errors]).map((item) => `${field}: ${item}`)).join("\n");
@@ -18,20 +21,22 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function AddressVillagesPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    items,
+    isLoading: loading,
+    isSaving: saving,
+    isImporting: importing,
+  } = useSelector((state) => state.addressVillages);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [deleteData, setDeleteData] = useState(null);
   const [loadError, setLoadError] = useState("");
   const importRef = useRef(null);
   const loadData = useCallback(async () => {
-    try { setItems(getItems(await addressVillagesService.getAll())); setLoadError(""); }
+    try { await dispatch(fetchAddressVillages()).unwrap(); setLoadError(""); }
     catch (error) { const message = getErrorMessage(error, "Unable to load address villages."); setLoadError(message); showErrorToast(message); }
-    finally { setLoading(false); }
-  }, []);
+  }, [dispatch]);
   useEffect(() => { loadData(); }, [loadData]);
   const columns = useMemo(() => [
     { accessorKey: "village_pcode", header: "Village P-Code", size: 180 },
@@ -44,35 +49,37 @@ export default function AddressVillagesPage() {
     { accessorKey: "created_at", header: "Created Date", size: 180 },
   ], []);
   const save = async (values) => {
-    setSaving(true);
     try {
-      if (editData) await addressVillagesService.update(editData.uuid || editData.id, values);
-      else await addressVillagesService.create(values);
+      if (editData) {
+        await dispatch(updateAddressVillage({
+          uuid: editData.uuid || editData.id,
+          data: values,
+        })).unwrap();
+      } else {
+        await dispatch(createAddressVillage(values)).unwrap();
+      }
       showSuccessToast(`Address Village ${editData ? "updated" : "created"}.`);
       setOpen(false); setEditData(null); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to save address village.")); }
-    finally { setSaving(false); }
   };
   const remove = async () => {
     if (!deleteData) return;
-    setSaving(true);
     try {
-      await addressVillagesService.delete(deleteData.uuid || deleteData.id);
+      await dispatch(
+        deleteAddressVillage(deleteData.uuid || deleteData.id)
+      ).unwrap();
       showSuccessToast("Address Village deleted.");
       setDeleteData(null); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to delete address village.")); }
-    finally { setSaving(false); }
   };
   const importFile = async (event) => {
     const file = event.target.files?.[0]; event.target.value = "";
     if (!file) return;
-    setImporting(true);
     try {
-      const result = await addressVillagesService.importFile(file); const payload = result?.data ?? result;
+      const result = await dispatch(importAddressVillages(file)).unwrap(); const payload = result?.data ?? result;
       showSuccessToast(Number.isFinite(payload?.rowCount) ? `Imported ${payload.rowCount} address village(s).` : "Address villages imported.");
       await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to import address villages.")); }
-    finally { setImporting(false); }
   };
   return (
     <Box sx={{ width: "100%" }}>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Alert,
   Box,
@@ -13,16 +14,17 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "../../../../components/common/ToastMessage";
-import nrcStatesService from "../services/nrcStatesService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  return [];
-};
+import {
+  batchDeleteNrcStates,
+  createNrcState,
+  deleteNrcState,
+  fetchNrcStates,
+  importNrcStates,
+  updateNrcState,
+} from "../store/nrcStatesSlice";
 
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") {
@@ -38,29 +40,29 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function NrcStatePage() {
-  const [states, setStates] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    items: states,
+    isLoading,
+    isSaving,
+    isImporting,
+  } = useSelector((state) => state.nrcStates);
   const [formOpen, setFormOpen] = useState(false);
   const [editState, setEditState] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [rowSelection, setRowSelection] = useState({});
-  const [isImporting, setIsImporting] = useState(false);
   const importInputRef = useRef(null);
   const [loadError, setLoadError] = useState("");
   const loadStates = useCallback(async () => {
     try {
-      const response = await nrcStatesService.getStates();
-      setStates(getItems(response));
+      await dispatch(fetchNrcStates()).unwrap();
       setLoadError("");
     } catch (error) {
       const message = getErrorMessage(error, "Unable to load NRC states.");
       setLoadError(message);
       showErrorToast(message);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     loadStates();
@@ -81,7 +83,6 @@ export default function NrcStatePage() {
   };
 
   const handleSave = async ({ name, state_code, description }) => {
-    setIsSaving(true);
     const payload = {
       name: name.trim(),
       state_code: Number(state_code),
@@ -90,9 +91,12 @@ export default function NrcStatePage() {
 
     try {
       if (editState) {
-        await nrcStatesService.updateState(editState.uuid || editState.id, payload);
+        await dispatch(updateNrcState({
+          uuid: editState.uuid || editState.id,
+          data: payload,
+        })).unwrap();
       } else {
-        await nrcStatesService.createState(payload);
+        await dispatch(createNrcState(payload)).unwrap();
       }
       showSuccessToast(
         `NRC State ${editState ? "updated" : "created"}.`
@@ -102,22 +106,19 @@ export default function NrcStatePage() {
       await loadStates();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to save NRC state."));
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleteConfirmation) return;
-    setIsSaving(true);
     try {
       if (deleteConfirmation.type === "batch") {
-        await nrcStatesService.batchDeleteStates(deleteConfirmation.uuids);
+        await dispatch(batchDeleteNrcStates(deleteConfirmation.uuids)).unwrap();
         showSuccessToast("Selected NRC states deleted.");
       } else {
-        await nrcStatesService.deleteState(
+        await dispatch(deleteNrcState(
           deleteConfirmation.state.uuid || deleteConfirmation.state.id
-        );
+        )).unwrap();
         showSuccessToast("NRC State deleted.");
       }
       setDeleteConfirmation(null);
@@ -127,8 +128,6 @@ export default function NrcStatePage() {
       showErrorToast(
         getErrorMessage(error, "Unable to delete selected NRC states.")
       );
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -137,9 +136,8 @@ export default function NrcStatePage() {
     event.target.value = "";
     if (!file) return;
 
-    setIsImporting(true);
     try {
-      const response = await nrcStatesService.importStates(file);
+      const response = await dispatch(importNrcStates(file)).unwrap();
       const payload = response?.data ?? response;
       const rowCount = payload?.rowCount;
       setRowSelection({});
@@ -151,8 +149,6 @@ export default function NrcStatePage() {
       await loadStates();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to import NRC states."));
-    } finally {
-      setIsImporting(false);
     }
   };
 

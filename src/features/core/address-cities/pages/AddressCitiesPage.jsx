@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
 import { showErrorToast, showSuccessToast } from "../../../../components/common/ToastMessage";
 import AddressCityForm from "../components/AddressCityForm";
-import addressCitiesService from "../services/addressCitiesService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  return Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : [];
-};
+import {
+  batchDeleteAddressCities,
+  createAddressCity,
+  deleteAddressCity,
+  fetchAddressCities,
+  importAddressCities,
+  updateAddressCity,
+} from "../store/addressCitiesSlice";
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") return Object.entries(message).flatMap(([field, errors]) => (Array.isArray(errors) ? errors : [errors]).map((item) => `${field}: ${item}`)).join("\n");
@@ -18,10 +22,13 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function AddressCitiesPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    items,
+    isLoading: loading,
+    isSaving: saving,
+    isImporting: importing,
+  } = useSelector((state) => state.addressCities);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [deleteData, setDeleteData] = useState(null);
@@ -29,10 +36,9 @@ export default function AddressCitiesPage() {
   const [loadError, setLoadError] = useState("");
   const importRef = useRef(null);
   const loadData = useCallback(async () => {
-    try { setItems(getItems(await addressCitiesService.getAll())); setLoadError(""); }
+    try { await dispatch(fetchAddressCities()).unwrap(); setLoadError(""); }
     catch (error) { const message = getErrorMessage(error, "Unable to load address cities."); setLoadError(message); showErrorToast(message); }
-    finally { setLoading(false); }
-  }, []);
+  }, [dispatch]);
   useEffect(() => { loadData(); }, [loadData]);
   const columns = useMemo(() => [
     { accessorKey: "town_pcode", header: "Town P-Code", size: 170 },
@@ -45,35 +51,35 @@ export default function AddressCitiesPage() {
     { accessorKey: "created_at", header: "Created Date", size: 180 },
   ], []);
   const save = async (values) => {
-    setSaving(true);
     try {
-      if (editData) await addressCitiesService.update(editData.uuid || editData.id, values);
-      else await addressCitiesService.create(values);
+      if (editData) {
+        await dispatch(updateAddressCity({
+          uuid: editData.uuid || editData.id,
+          data: values,
+        })).unwrap();
+      } else {
+        await dispatch(createAddressCity(values)).unwrap();
+      }
       showSuccessToast(`Address City ${editData ? "updated" : "created"}.`);
       setOpen(false); setEditData(null); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to save address city.")); }
-    finally { setSaving(false); }
   };
   const remove = async () => {
     if (!deleteData) return;
-    setSaving(true);
     try {
-      if (deleteData.type === "batch") { await addressCitiesService.batchDelete(deleteData.uuids); showSuccessToast("Selected address cities deleted."); }
-      else { await addressCitiesService.delete(deleteData.item.uuid || deleteData.item.id); showSuccessToast("Address City deleted."); }
+      if (deleteData.type === "batch") { await dispatch(batchDeleteAddressCities(deleteData.uuids)).unwrap(); showSuccessToast("Selected address cities deleted."); }
+      else { await dispatch(deleteAddressCity(deleteData.item.uuid || deleteData.item.id)).unwrap(); showSuccessToast("Address City deleted."); }
       setDeleteData(null); setSelection({}); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to delete address cities.")); }
-    finally { setSaving(false); }
   };
   const importFile = async (event) => {
     const file = event.target.files?.[0]; event.target.value = "";
     if (!file) return;
-    setImporting(true);
     try {
-      const result = await addressCitiesService.importFile(file); const payload = result?.data ?? result;
+      const result = await dispatch(importAddressCities(file)).unwrap(); const payload = result?.data ?? result;
       showSuccessToast(Number.isFinite(payload?.rowCount) ? `Imported ${payload.rowCount} address city record(s).` : "Address cities imported.");
       await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to import address cities.")); }
-    finally { setImporting(false); }
   };
   const selectedCount = Object.keys(selection).length;
   return (

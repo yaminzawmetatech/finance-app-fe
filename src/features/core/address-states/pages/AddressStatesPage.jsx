@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
@@ -7,14 +8,16 @@ import {
   showSuccessToast,
 } from "../../../../components/common/ToastMessage";
 import AddressStateForm from "../components/AddressStateForm";
-import addressStatesService from "../services/addressStatesService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  return Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : [];
-};
+import {
+  createAddressState,
+  deleteAddressState,
+  fetchAddressStates,
+  importAddressStates,
+  updateAddressState,
+} from "../store/addressStatesSlice";
 
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") {
@@ -28,10 +31,10 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function AddressStatesPage() {
-  const [states, setStates] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
+  const dispatch = useDispatch();
+  const { items: states, isLoading, isSaving, isImporting } = useSelector(
+    (state) => state.addressStates
+  );
   const [formOpen, setFormOpen] = useState(false);
   const [editState, setEditState] = useState(null);
   const [deleteData, setDeleteData] = useState(null);
@@ -40,16 +43,14 @@ export default function AddressStatesPage() {
 
   const loadStates = useCallback(async () => {
     try {
-      setStates(getItems(await addressStatesService.getAll()));
+      await dispatch(fetchAddressStates()).unwrap();
       setLoadError("");
     } catch (error) {
       const message = getErrorMessage(error, "Unable to load address states.");
       setLoadError(message);
       showErrorToast(message);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => { loadStates(); }, [loadStates]);
 
@@ -64,12 +65,14 @@ export default function AddressStatesPage() {
   ], []);
 
   const handleSave = async (values) => {
-    setIsSaving(true);
     try {
       if (editState) {
-        await addressStatesService.update(editState.uuid || editState.id, values);
+        await dispatch(updateAddressState({
+          uuid: editState.uuid || editState.id,
+          data: values,
+        })).unwrap();
       } else {
-        await addressStatesService.create(values);
+        await dispatch(createAddressState(values)).unwrap();
       }
       showSuccessToast(`Address State ${editState ? "updated" : "created"}.`);
       setFormOpen(false);
@@ -77,23 +80,20 @@ export default function AddressStatesPage() {
       await loadStates();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to save address state."));
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleteData) return;
-    setIsSaving(true);
     try {
-      await addressStatesService.delete(deleteData.uuid || deleteData.id);
+      await dispatch(
+        deleteAddressState(deleteData.uuid || deleteData.id)
+      ).unwrap();
       showSuccessToast("Address State deleted.");
       setDeleteData(null);
       await loadStates();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to delete address state."));
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -101,9 +101,8 @@ export default function AddressStatesPage() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    setIsImporting(true);
     try {
-      const result = await addressStatesService.importFile(file);
+      const result = await dispatch(importAddressStates(file)).unwrap();
       const payload = result?.data ?? result;
       showSuccessToast(
         Number.isFinite(payload?.rowCount)
@@ -113,8 +112,6 @@ export default function AddressStatesPage() {
       await loadStates();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to import address states."));
-    } finally {
-      setIsImporting(false);
     }
   };
 

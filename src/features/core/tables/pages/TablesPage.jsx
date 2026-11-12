@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
@@ -7,16 +8,16 @@ import {
   showSuccessToast,
 } from "../../../../components/common/ToastMessage";
 import TableForm from "../components/TableForm";
-import tablesService from "../services/tablesService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  throw new Error("Unexpected response format when loading tables.");
-};
+import {
+  batchDeleteTables,
+  createTable,
+  deleteTable,
+  fetchTables,
+  updateTable,
+} from "../store/tablesSlice";
 
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") {
@@ -32,9 +33,10 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function TablesPage() {
-  const [tables, setTables] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const dispatch = useDispatch();
+  const { items: tables, isLoading, isSaving } = useSelector(
+    (state) => state.tables
+  );
   const [formOpen, setFormOpen] = useState(false);
   const [editTable, setEditTable] = useState(null);
   const [deleteData, setDeleteData] = useState(null);
@@ -43,16 +45,14 @@ export default function TablesPage() {
 
   const loadTables = useCallback(async () => {
     try {
-      setTables(getItems(await tablesService.getAll()));
+      await dispatch(fetchTables()).unwrap();
       setLoadError("");
     } catch (error) {
       const message = getErrorMessage(error, "Unable to load tables.");
       setLoadError(message);
       showErrorToast(message);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     loadTables();
@@ -76,7 +76,6 @@ export default function TablesPage() {
   };
 
   const handleSave = async (values) => {
-    setIsSaving(true);
     try {
       const payload = {
         name: values.name.trim(),
@@ -86,9 +85,12 @@ export default function TablesPage() {
         if (!editTable.uuid) {
           throw new Error("Cannot update this table: its UUID is missing.");
         }
-        await tablesService.update(editTable.uuid, payload);
+        await dispatch(updateTable({
+          uuid: editTable.uuid,
+          data: payload,
+        })).unwrap();
       } else {
-        await tablesService.create(payload);
+        await dispatch(createTable(payload)).unwrap();
       }
       showSuccessToast(editTable ? "Table updated." : "Table created.");
       setFormOpen(false);
@@ -96,23 +98,20 @@ export default function TablesPage() {
       await loadTables();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to save table."));
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleteData) return;
-    setIsSaving(true);
     try {
       if (deleteData.type === "batch") {
-        await tablesService.batchDelete(deleteData.uuids);
+        await dispatch(batchDeleteTables(deleteData.uuids)).unwrap();
         showSuccessToast("Selected tables deleted.");
       } else {
         if (!deleteData.table.uuid) {
           throw new Error("Cannot delete this table: its UUID is missing.");
         }
-        await tablesService.delete(deleteData.table.uuid);
+        await dispatch(deleteTable(deleteData.table.uuid)).unwrap();
         showSuccessToast("Table deleted.");
       }
       setDeleteData(null);
@@ -120,8 +119,6 @@ export default function TablesPage() {
       await loadTables();
     } catch (error) {
       showErrorToast(getErrorMessage(error, "Unable to delete table(s)."));
-    } finally {
-      setIsSaving(false);
     }
   };
 

@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import Table from "../../../../components/tables/Table";
 import DeleteConfirmationModal from "../../../../components/common/DeleteConfirmationModal";
 import { showErrorToast, showSuccessToast } from "../../../../components/common/ToastMessage";
 import AddressTownshipForm from "../components/AddressTownshipForm";
-import addressTownshipsService from "../services/addressTownshipsService";
-
-const getItems = (response) => {
-  const payload = response?.data ?? response;
-  return Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : [];
-};
+import {
+  batchDeleteAddressTownships,
+  createAddressTownship,
+  deleteAddressTownship,
+  fetchAddressTownships,
+  importAddressTownships,
+  updateAddressTownship,
+} from "../store/addressTownshipsSlice";
 const getErrorMessage = (error, fallback) => {
+  if (typeof error === "string") return error;
   const message = error.response?.data?.message ?? error.message;
   if (typeof message === "string") return message;
   if (message && typeof message === "object") return Object.entries(message).flatMap(([field, errors]) => (Array.isArray(errors) ? errors : [errors]).map((item) => `${field}: ${item}`)).join("\n");
@@ -18,10 +22,13 @@ const getErrorMessage = (error, fallback) => {
 };
 
 export default function AddressTownshipsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    items,
+    isLoading: loading,
+    isSaving: saving,
+    isImporting: importing,
+  } = useSelector((state) => state.addressTownships);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [deleteData, setDeleteData] = useState(null);
@@ -29,10 +36,9 @@ export default function AddressTownshipsPage() {
   const [loadError, setLoadError] = useState("");
   const importRef = useRef(null);
   const loadData = useCallback(async () => {
-    try { setItems(getItems(await addressTownshipsService.getAll())); setLoadError(""); }
+    try { await dispatch(fetchAddressTownships()).unwrap(); setLoadError(""); }
     catch (error) { const message = getErrorMessage(error, "Unable to load address townships."); setLoadError(message); showErrorToast(message); }
-    finally { setLoading(false); }
-  }, []);
+  }, [dispatch]);
   useEffect(() => { loadData(); }, [loadData]);
   const columns = useMemo(() => [
     { accessorKey: "ts_pcode", header: "Township P-Code", size: 180 },
@@ -46,35 +52,35 @@ export default function AddressTownshipsPage() {
     { accessorKey: "created_at", header: "Created Date", size: 180 },
   ], []);
   const save = async (values) => {
-    setSaving(true);
     try {
-      if (editData) await addressTownshipsService.update(editData.uuid || editData.id, values);
-      else await addressTownshipsService.create(values);
+      if (editData) {
+        await dispatch(updateAddressTownship({
+          uuid: editData.uuid || editData.id,
+          data: values,
+        })).unwrap();
+      } else {
+        await dispatch(createAddressTownship(values)).unwrap();
+      }
       showSuccessToast(`Address Township ${editData ? "updated" : "created"}.`);
       setOpen(false); setEditData(null); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to save address township.")); }
-    finally { setSaving(false); }
   };
   const remove = async () => {
     if (!deleteData) return;
-    setSaving(true);
     try {
-      if (deleteData.type === "batch") { await addressTownshipsService.batchDelete(deleteData.uuids); showSuccessToast("Selected address townships deleted."); }
-      else { await addressTownshipsService.delete(deleteData.item.uuid || deleteData.item.id); showSuccessToast("Address Township deleted."); }
+      if (deleteData.type === "batch") { await dispatch(batchDeleteAddressTownships(deleteData.uuids)).unwrap(); showSuccessToast("Selected address townships deleted."); }
+      else { await dispatch(deleteAddressTownship(deleteData.item.uuid || deleteData.item.id)).unwrap(); showSuccessToast("Address Township deleted."); }
       setDeleteData(null); setSelection({}); await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to delete address townships.")); }
-    finally { setSaving(false); }
   };
   const importFile = async (event) => {
     const file = event.target.files?.[0]; event.target.value = "";
     if (!file) return;
-    setImporting(true);
     try {
-      const result = await addressTownshipsService.importFile(file); const payload = result?.data ?? result;
+      const result = await dispatch(importAddressTownships(file)).unwrap(); const payload = result?.data ?? result;
       showSuccessToast(Number.isFinite(payload?.rowCount) ? `Imported ${payload.rowCount} address township(s).` : "Address townships imported.");
       await loadData();
     } catch (error) { showErrorToast(getErrorMessage(error, "Unable to import address townships.")); }
-    finally { setImporting(false); }
   };
   const selectedCount = Object.keys(selection).length;
   return (
