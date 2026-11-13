@@ -1,7 +1,7 @@
-import createAddressSlice from "../../address-common/store/createAddressSlice";
+import createSharedSlice from "../../shared-slice/store/createSharedSlice";
 import addressWardsService from "../services/addressWardsService";
 
-const addressWardsSlice = createAddressSlice(
+const addressWardsSlice = createSharedSlice(
   "addressWards",
   addressWardsService
 );

@@ -37,6 +37,9 @@ import AddressWardsPage from "../features/core/address-wards/pages/AddressWardsP
 import AddressVillagesPage from "../features/core/address-villages/pages/AddressVillagesPage";
 import AddressVillageTractsPage from "../features/core/address-village-tracts/pages/AddressVillageTractsPage";
 import TablesPage from "../features/core/tables/pages/TablesPage";
+import CategoriesPage from "../features/core/categories/pages/CategoriesPage";
+import SubCategoriesPage from "../features/core/sub-categories/pages/SubCategoriesPage";
+
 
 function RequireAuth() {
   const isAuthenticated = useSelector(
@@ -140,6 +143,14 @@ export const router = createBrowserRouter([
               {
                 path: "/administration/address-village-tracts",
                 element: <AddressVillageTractsPage />,
+              },
+              {
+                path: "/administration/categories",
+                element: <CategoriesPage />,
+              },
+                {
+                path: "/administration/sub-categories",
+                element: <SubCategoriesPage />,
               },
             ],
           },

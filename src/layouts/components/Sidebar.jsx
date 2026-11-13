@@ -322,7 +322,10 @@ import {
   ClipboardList,
   BookOpen,
   NotebookPen,
+  SlidersHorizontal,
+  Settings2
 } from "lucide-react";
+
 
 import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -374,6 +377,8 @@ const ICONS = {
   ClipboardList,
   BookOpen,
   NotebookPen,
+  SlidersHorizontal,
+  Settings2
 };
 
 export default function Sidebar() {

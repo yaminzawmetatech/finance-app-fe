@@ -22,7 +22,7 @@ const getErrorMessage = (error) => {
   return "Unable to complete address request.";
 };
 
-export default function createAddressSlice(name, service) {
+export default function createSharedSlice(name, service) {
   const createRequest = (operation, request) =>
     createAsyncThunk(`${name}/${operation}`, async (args, thunkAPI) => {
       try {

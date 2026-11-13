@@ -216,6 +216,20 @@ export const NAVIGATION_CONFIG = [
         icon: "Map",
         module: "administration",
       },
+      {
+        id: "categories",
+        label: "Category Management",
+        path: "/administration/categories",
+        icon: "SlidersHorizontal",
+        module: "administration",
+      },
+       {
+        id: "sub-categories",
+        label: "Sub Category Management",
+        path: "/administration/sub-categories",
+        icon: "Settings2",
+        module: "administration",
+      },
     ],
   },
 

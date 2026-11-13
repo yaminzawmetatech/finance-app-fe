@@ -16,6 +16,9 @@ import addressCities from "../features/core/address-cities/store/addressCitiesSl
 import addressWards from "../features/core/address-wards/store/addressWardsSlice";
 import addressVillages from "../features/core/address-villages/store/addressVillagesSlice";
 import addressVillageTracts from "../features/core/address-village-tracts/store/addressVillageTractsSlice";
+import categories from "../features/core/categories/store/categoriesSlice";
+import subCategories from "../features/core/sub-categories/store/subCategoriesSlice";
+
 
 export const store = configureStore({
   reducer: {
@@ -34,5 +37,7 @@ export const store = configureStore({
     addressWards,
     addressVillages,
     addressVillageTracts,
+    categories,
+    subCategories,
   },
 });
