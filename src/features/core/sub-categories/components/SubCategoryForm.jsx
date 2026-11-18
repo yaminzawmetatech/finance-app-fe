@@ -8,6 +8,7 @@ import {
   FormControlLabel,
   Switch,
   TextField,
+  MenuItem
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 
@@ -58,6 +59,7 @@ export default function SubCatgoryForm({
             {...register("name", { required: "Name is required." })}
           />
           <TextField label="Code" {...register("code")} />
+          <TextField label="Interest Rate" {...register("interest_rate")} />
            <Controller
             name="category_id"
             control={control}
@@ -76,9 +78,9 @@ export default function SubCatgoryForm({
                 helperText={fieldState.error?.message}
                 disabled={isCategoriesLoading}
               >
-                {categories.map((state) => (
-                  <MenuItem key={state.id} value={String(state.id)}>
-                    {state.name}
+                {categories.map((item) => (
+                  <MenuItem key={item.id} value={String(item.id)}>
+                    {item.name}
                   </MenuItem>
                 ))}
               </TextField>

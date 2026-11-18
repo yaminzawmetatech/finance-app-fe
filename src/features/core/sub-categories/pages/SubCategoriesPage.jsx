@@ -30,7 +30,7 @@ const getErrorMessage = (error, fallback) => {
   return fallback;
 };
 
-export default function CategoriesPage() {
+export default function SubCategoriesPage() {
   const dispatch = useDispatch();
   const { items: subCategories, isLoading, isSaving, isImporting } = useSelector(
     (state) => state.subCategories
@@ -64,6 +64,7 @@ export default function CategoriesPage() {
   const columns = useMemo(() => [
     { accessorKey: "name", header: "Name", size: 240 },
     { accessorKey: "code", header: "Code", size: 240 },
+    { accessorKey: "interest_rate", header: "Interest Rate", size: 240 },
     { accessorKey: "cateogry", header: "Category", size: 240 },
     { accessorKey: "description", header: "Description", size: 300 },
     { accessorKey: "created_by", header: "Created By", size: 160 },
@@ -105,7 +106,7 @@ export default function CategoriesPage() {
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Typography component="h1" variant="h5" sx={{ mb: 2 }}>Category Management</Typography>
+      <Typography component="h1" variant="h5" sx={{ mb: 2 }}>Sub Category Management</Typography>
       {loadError && <Alert severity="error" sx={{ mb: 2 }}>{loadError}</Alert>}
       <Paper sx={{ width: "100%", p: 2 }}>
         <Table
