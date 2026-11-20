@@ -37,14 +37,21 @@ export const CREDIT_MANAGEMENT_NAVIGATION = [
       {
         id: "occupations",
         label: "Occupations",
-        path: "/credit-management/occupations",
+        path: "/credit-management/setups/occupations",
         icon: "BriefcaseBusiness",
         permission: "credit-management.occupations.view",
       },
       {
+        id: "type-of-businesses",
+        label: "Types of Business",
+        path: "/credit-management/setups/type-of-businesses",
+        icon: "BriefcaseBusiness",
+        permission: "credit-management.type-of-businesses.view",
+      },
+      {
         id: "document-types",
         label: "Document Types",
-        path: "/credit-management/document-types",
+        path: "/credit-management/setups/document-types",
         icon: "FileText",
         permission: "UsersListing",
       },

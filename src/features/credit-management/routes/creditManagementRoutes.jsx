@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 // Setup pages
 import OccupationsList from "../setups/occupations/pages/OccupationsList";
 import DocumentTypesList from "../setups/document-types/pages/DocumentTypesList";
+import TypeOfBusinessesPage from "../setups/type-of-businesses/pages/TypeOfBusinessesPage";
 
 // Application pages
 import ApplicationsList from "../applications/pages/ApplicationsList";
@@ -23,6 +24,10 @@ export default function CreditManagementRoutes() {
             {/* Setups */}
             <Route path="setups/occupations" element={<OccupationsList />} />
             <Route path="setups/document-types" element={<DocumentTypesList />} />
+            <Route
+                path="setups/type-of-businesses"
+                element={<TypeOfBusinessesPage />}
+            />
 
             {/* Applications */}
             <Route path="applications" element={<ApplicationsList />} />

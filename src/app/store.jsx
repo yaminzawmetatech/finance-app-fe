@@ -19,6 +19,10 @@ import addressVillageTracts from "../features/core/address-village-tracts/store/
 import categories from "../features/core/categories/store/categoriesSlice";
 import subCategories from "../features/core/sub-categories/store/subCategoriesSlice";
 import dealerGroups from "../features/core/dealer-group/store/dealerGroupsSlice";
+import typeOfBusinesses from "../features/credit-management/setups/type-of-businesses/store/typeOfBusinessesSlice";
+import blacklistCustomers from "../features/core/blacklist-customers/store/blacklistCustomersSlice";
+import mainBusinessCategories from "../features/core/main-business-categories/store/mainBusinessCategoriesSlice";
+import subBusinessCategories from "../features/core/sub-business-categories/store/subBusinessCategoriesSlice";
 
 export const store = configureStore({
   reducer: {
@@ -39,6 +43,10 @@ export const store = configureStore({
     addressVillageTracts,
     categories,
     subCategories,
-    dealerGroups
+    dealerGroups,
+    typeOfBusinesses,
+    blacklistCustomers,
+    mainBusinessCategories,
+    subBusinessCategories
   },
 });

@@ -132,6 +132,27 @@ export const CORE_NAVIGATION = [
         icon: "Settings2",
         module: "administration",
       },
+      {
+        id: "blacklist-customers",
+        label: "Blacklist Customers",
+        path: "/administration/blacklist-customers",
+        icon: "UserRound",
+        permission: "BlackListCustomerListing",
+      },
+      {
+        id: "main-business-categories",
+        label: "Main Business Categories",
+        path: "/administration/main-business-categories",
+        icon: "Tags",
+        permission: "MainBusinessCategoryListing",
+      },
+      {
+        id: "sub-business-categories",
+        label: "Sub Business Categories",
+        path: "/administration/sub-business-categories",
+        icon: "Tags",
+        permission: "SubBusinessCategoryListing",
+      },
     ],
   },
 ];
