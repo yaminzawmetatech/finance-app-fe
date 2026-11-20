@@ -132,6 +132,13 @@ export const CORE_NAVIGATION = [
         icon: "Settings2",
         module: "administration",
       },
+      {
+        id: "dealers",
+        label: "Dealer Management",
+        path: "/administration/dealers",
+        icon: "Building2",
+        module: "administration",
+      },
     ],
   },
 ];

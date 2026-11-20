@@ -19,6 +19,7 @@ import addressVillageTracts from "../features/core/address-village-tracts/store/
 import categories from "../features/core/categories/store/categoriesSlice";
 import subCategories from "../features/core/sub-categories/store/subCategoriesSlice";
 import dealerGroups from "../features/core/dealer-group/store/dealerGroupsSlice";
+import dealers from "../features/core/dealer/store/dealersSlice";
 
 export const store = configureStore({
   reducer: {
@@ -39,6 +40,7 @@ export const store = configureStore({
     addressVillageTracts,
     categories,
     subCategories,
-    dealerGroups
+    dealerGroups,
+    dealers
   },
 });

@@ -18,6 +18,7 @@ import AddressVillageTractsPage from "./address-village-tracts/pages/AddressVill
 import CategoriesPage from "./categories/pages/CategoriesPage";
 import SubCategoriesPage from "./sub-categories/pages/SubCategoriesPage";
 import DealerGroupPage from "./dealer-group/pages/DealerGroupPage";
+import DealersPage from "./dealer/pages/DealersPage";
 
 export default function CoreRoutes() {
     return (
@@ -45,6 +46,7 @@ export default function CoreRoutes() {
             <Route path= "categories" element={<CategoriesPage />} />
             <Route path= "sub-categories" element={<SubCategoriesPage />} />
             <Route path= "dealer-groups" element={<DealerGroupPage />} />
+            <Route path= "dealers" element={<DealersPage />} />
         </Routes>
     );
 }
